@@ -5,7 +5,7 @@ User Stories:
  Acceptance Criteria:
      -  User must be able to log in using their registered credentials
      - The log in process should be secure and user-friendly
-      - Users should receive feedback if their login attempt is unsuccessful.
+     - Users should receive feedback if their login attempt is unsuccessful.
  
 Edge Cases:
 -  Entering a phone number or email address that already exists
