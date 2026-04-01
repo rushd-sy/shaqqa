@@ -1,0 +1,48 @@
+User Stories:
+ As a registered user, when I want to access my account, I want to log in so that I can manage my personal information and settings.
+
+
+ Acceptance Criteria:
+     -  User must be able to log in using their registered credentials
+     - The log in process should be secure and user-friendly
+      - Users should receive feedback if their login attempt is unsuccessful.
+ 
+Edge Cases:
+-  Entering a phone number or email address that already exists
+-  Setting a weak password
+-  Entering a blank password
+-  Using an existing username
+
+
+ Data Entities:
+-  User
+-  Login
+-  User Rating
+-  verification status
+
+
+API Endpoints:
+ the URL paths:
+/signup 
+/signin
+
+Request & Response :
+
+Request :
+POST  /signup
+Accept: application/json
+{
+“username”: “ahmad”,
+"email": "ahmad@gmail.com",
+"password": "123456"
+}
+
+
+expected Response :
+         200 OK
+Content - Type : application/json
+{
+  "id": 101,
+  "username": "ahmad",
+  "email": "ahmad@gmail.com"
+}
