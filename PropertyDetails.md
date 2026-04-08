@@ -1,7 +1,6 @@
 \# Property Details (Technical specs, media/images, and descriptions)
 
 
-
 \## User Stories
 
 
@@ -29,39 +28,6 @@
 
 
 \---
-
-
-
-\## Acceptance Criteria
-
-
-
-\### A - Technical specs
-
-
-
-Location is returned in API response in valid format (lat, long \& structured address)
-
-
-
-Like =>
-
-
-
-```json
-
-"location": {
-
-&#x20; "latitude": number between -90 \& 90,
-
-&#x20; "longitude": number between -180 \& 180,
-
-&#x20; "address": "Aleppo, Syria"
-
-}
-
-
-
 
 
 **Acceptance Criteria:**
@@ -109,7 +75,6 @@ Like =>
 
 
 
-
 **Edge Cases**
 
 * Location is missing
@@ -117,11 +82,9 @@ Like =>
 =>API returns 400 Bad Request  {“location is required”}
 
 
-
 * Location must include valid latitude (-90 to 90) and longitude (-180 to 180)”
 
 => 400 Bad Request { "message": "Invalid location format" }
-
 
 
 * Area is missing \& area <= 0       
@@ -129,11 +92,9 @@ Like =>
 =>API returns 400 Bad Request  {“area is required and should be greater than zero”}
 
 
-
 * Price is missing \&Price <= 0
 
 =>API returns 400 Bad Request  {“price is required and should be greater than zero”}
-
 
 
 * Number of rooms is missing for (apartment/villa) \& rooms <= 0 
@@ -141,11 +102,9 @@ Like =>
 =>API returns 400 Bad Request  {“number of rooms is required and should be greater than zero”}
 
 
-
 * Legal Status is missing or  invalid enum value.
 
 =>API returns 400 Bad Request  {“......”}
-
 
 
 * construction date is missing or invalid date time.
@@ -153,9 +112,7 @@ Like =>
 =>API returns 400 Bad Request  {“......”}
 
 
-
 * Property description is missing
-
 
 
 * Property exists but is inactive/deleted 
@@ -192,10 +149,6 @@ Like =>
 * Invalid location format
 
 => 400 Bad Request{ "Invalid location format ……."}
-
-
-
-
 
 
 
