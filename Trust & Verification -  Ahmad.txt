@@ -54,7 +54,7 @@ POST/badges
 Host: Shaqqa.com
 Accept: application/json
 {
-" publisher_type": "owner",
+"publisher_type": "owner",
 "identity_card_image": "image_url",
 "property_contract_image": "image_url"
 }
@@ -63,9 +63,9 @@ Response:
 HTTP/1.1 201 Created
 Content - Type: application/json
 {
- "badge_id":  1,
- "user_id": 123,
- "badge_type": "owner", 
+"badge_id":  1,
+"user_id": 123,
+"badge_type": "owner", 
 "badge_status": "PENDING", 
 "issued_at": "2026-04-09"
  }
