@@ -16,7 +16,8 @@ Then the buyer gains knowledge of other customers' opinions about the property
 
 
 
-///////////////////////////////////////////////
+////////////////////////////////
+
 
 
 Edge Cases:
@@ -28,7 +29,8 @@ Edge Cases:
 - If the seller has no reviews => display "No reviews yet" to the buyer
 
 
-//////////////////////////////////////////////////
+/////////////////////////////////
+
 
  Data Entities:
 1.  	Agent Badge
@@ -54,10 +56,7 @@ Edge Cases:
 -submitted_at
 -verified_at
 
-
-///////////////////////////////////////////////////
-
-
+//////////////////////////////////
 Agent Badge API Endpoints:
 Post – إضافة طلب الشارة
 POST / badges
