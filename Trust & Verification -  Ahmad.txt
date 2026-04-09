@@ -1,48 +1,101 @@
-User Stories:
- As a registered user, when I want to access my account, I want to log in so that I can manage my personal information and settings.
-
-
- Acceptance Criteria:
-     -  User must be able to log in using their registered credentials
-     - The log in process should be secure and user-friendly
-     - Users should receive feedback if their login attempt is unsuccessful.
+User Stories   &&   Acceptance Criteria:
+1. As a Buyer, I want to see the seller's Agent badge, so that I can trust the seller before contacting them.
+Given the buyer wants to verify the seller's trustworthiness
+When the buyer visits the seller's profile
+Then the buyer can see the agent badge on the seller's profile
  
-Edge Cases:
--  Entering a phone number or email address that already exists
--  Setting a weak password
--  Entering a blank password
--  Using an existing username
+2.As a Seller, I want to receive an Agent badge quickly and easily, so that I can become trustworthy to buyers.
+Given the seller does not have an agent badge
+When the seller submits their documents through the platform
+Then the seller receives the agent badge after admin approval without needing to complete multiple sales
+ 
+3.As a Buyer, I want to see the ratings and badges on the listing, so that I can know other customers' reviews about the seller.
+ Given there are ratings and reviews from other customers
+When the buyer reads the reviews and sees the ratings on the listing
+Then the buyer gains knowledge of other customers' opinions about the property  
 
+
+
+///////////////////////////////////////////////
+
+
+Edge Cases:
+*
+- If the seller has no agent badge => display "This seller has no badge" to the buyer
+- If the seller's badge has been removed by admin => display "Badge Revoked" to the buyer 
+**
+- If the seller has no ratings => display "No ratings yet" to the buyer
+- If the seller has no reviews => display "No reviews yet" to the buyer
+
+
+//////////////////////////////////////////////////
 
  Data Entities:
--  User
--  Login
--  User Rating
--  verification status
+1.  	Agent Badge
+-badge_id
+-user_id
+-badge_Type
+-badge_status   	
+-issued_at
+-revoked_at
+ 
+2.  	Trust Metrics
+-metric_id
+-user_id
+-rating
+-review
+-reviews_count
+-raters_count
+ 
+3.  	Verification Status
+-verification_id
+-user_id
+-status
+-submitted_at
+-verified_at
 
 
-API Endpoints:
- the URL paths:
-/signup 
-/signin
+///////////////////////////////////////////////////
 
-Request & Response :
 
-Request :
-POST  /signup
+Agent Badge API Endpoints:
+Post – إضافة طلب الشارة
+POST / badges
+Host: Shaqqa.com
 Accept: application/json
+Content – Type: application/json
 {
-“username”: “ahmad”,
-"email": "ahmad@gmail.com",
-"password": "Ahm123456..%"
+“badge_id:”1”,
+“user_id”: “123”,
+" publisher_type": "owner",
+"identity_card_image": "image_url",
+"property_contract_image": "image_url"
 }
-
-
-expected Response :
-         201 Created
-Content - Type : application/json
+Response:
+HTTP /1.1     201 Created
+Content - Type: application/json
 {
-  "id": 101,
-  "username": "ahmad",
-  "email": "ahmad@gmail.com"
+ "badge_id": 1,
+ "user_id": 123,
+ "badge_type": "owner",
+"badge_status": "PENDING",
+"issued_at": "2026-04-09"
+ }
+Put – تعديل الشارة
+Request PUT /badges/{badge_id}
+ {
+"badge_id": 1,
+"user_id": 123,
+ "badge_type": "GOLD",
+"badge_status": "ACTIVE",
+" publisher _type": "BROKER",
 }
+Response
+{
+ "badge_id": 1,
+ "user_id": 123,
+"badge_type": " Gold ",
+"badge_status": "ACTIVE",
+" publisher _type": "BROKER",
+ "issued_at": "2026-04-09"
+ }
