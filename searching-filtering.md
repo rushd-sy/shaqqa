@@ -16,15 +16,15 @@ User Story & Acceptance Criteria :
 
 Data Entities :
 
-User 
-Property
-history
+    User 
+    Property
+    history
 
 API Structure:
-Get method
-HTTP status code:
-200 (OK)
-400 (Bad request)
-404 (Not found)
-500 (Server Error)
+    Get method
+    HTTP status code:
+    200 (OK)
+    400 (Bad request)
+    404 (Not found)
+    500 (Server Error)
 
