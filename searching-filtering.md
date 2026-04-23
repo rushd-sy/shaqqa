@@ -14,17 +14,50 @@ User Story & Acceptance Criteria :
         /A "Nothing" message should appear if the user searches for something that does not exist.
         /There should be an option to clear all filters.
 
+Edge Cases :
+    /If the user searches for a location that does not exist => a "nothing" message should appear.
+    /If the user enters negative values => a "Invalid Input" message should appear.
+    /If the user enters an inappropriate value for the field, such as String instead of Int =>a "Invalid Input" message should appear.
+
+
 Data Entities :
 
-    User 
-    Property
-    history
+    User (...)
+    Property(...)
+    history(...)
 
-API Structure:
-    Get method
-    HTTP status code:
-    200 (OK)
-    400 (Bad request)
-    404 (Not found)
-    500 (Server Error)
+API Structure :
+    Method : GET
+    Path : /api/v1/properties/filter
+    Description : Filter by ( price, area, location ,latest ,estate type ,contract type , room count )
+    Query Parameters :
+        minPrice (decimal)
+        maxPrice (decimal)
+        location (string)
+        roomCount (int)
+        area (decimal)
+        estateType (string)
+        contractType (string)
+
+    status code :
+        Success Response : 200 (ok)
+            {
+                "totalItems": 45,
+                "totalPages": 5,
+                "currentPage": 1,
+                "pageSize": 10,
+                "data": [
+                            { "id": ,... },
+                            { "id": ,... }
+                        ]
+            }
+        Error Responses :
+            400 : (Bad Request)=>If the input data is missing required fields
+                {
+                    "error": "Invalid Input",
+                    "message": "Minimum price cannot be less than zero.",
+                    "code": 400
+                }
+            500 (Internal Server Error)=>If a database connection failure occurs
+
 
