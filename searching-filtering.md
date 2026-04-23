@@ -15,9 +15,12 @@ User Story & Acceptance Criteria :
         /There should be an option to clear all filters.
 
 Edge Cases :
-    /If the user searches for a location that does not exist => a "nothing" message should appear.
-    /If the user enters negative values => a "Invalid Input" message should appear.
-    /If the user enters an inappropriate value for the field, such as String instead of Int =>a "Invalid Input" message should appear.
+
+    //If the user searches for a location that does not exist => a "nothing" message should appear.
+    
+    //If the user enters negative values => a "Invalid Input" message should appear.
+    
+    //If the user enters an inappropriate value for the field, such as String instead of Int =>a "Invalid Input" message should appear.
 
 
 Data Entities :
@@ -32,7 +35,7 @@ API Structure :
     Path : /api/v1/properties/filter
 
     Description : Filter by ( price, area, location ,latest ,estate type ,contract type , room count )
-    
+
     Query Parameters :
         minPrice (decimal)
         maxPrice (decimal)
