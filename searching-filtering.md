@@ -28,8 +28,11 @@ Data Entities :
 
 API Structure :
     Method : GET
+
     Path : /api/v1/properties/filter
+
     Description : Filter by ( price, area, location ,latest ,estate type ,contract type , room count )
+    
     Query Parameters :
         minPrice (decimal)
         maxPrice (decimal)
