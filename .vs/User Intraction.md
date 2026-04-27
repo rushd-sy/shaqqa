@@ -3,9 +3,11 @@
 * **As a user**, I want to remove properties from my favorites list.
 * **As a user**, I want to be able to book a visit to the property I have chosen, to get a real look at the property.
 * **As a user**, I want there to be date options so I can choose a specific date that suits me.
-* **As a user**, I want my favorites sorted by date.
+* **As a user**, I want my favorites sorted by Create_At(The most recently saved item is at the top of the list.).
 * **As a user**, I want to see a list of upcoming appointments.
+* **As a user**, I want to see if my booking is succesfully or not .
 * **As a user**, I want to cancel an appointment from my appointment list.
+* **As a user**, I want to confirm whether my reservation has been cancelled or not.
 
 ---
 
@@ -13,7 +15,10 @@
 * **User**
 * **Property**
 * **Favorite**: `favorite_id`, `user_id`, `property_id`, `created_at`.
-* **Booking_Visit**: `booking_id`, `user_id`, `property_id`, `created_at`, `available_appointment`, `status`.
+
+* **Booking_Visit**: `booking_id`, `user_id`, `property_id`, `created_at`, `appointment_datetime`, `status ENUM('pending', 'confirmed', 'cancelled')` , `availability_id `.
+
+* **Property_Availability** : `availability_id` , `property_id`, `start_time`, `end_time` , `is_booked`
 
 ---
 
@@ -29,9 +34,8 @@
 **Request Body**:
 ```json
 {
-  "userId": 105,
   "propertyId": 20,
-  "appointmentDate": "2026-05-15"
+  "availability_id": 25
 }
 ```
 
