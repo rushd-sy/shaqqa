@@ -1,7 +1,7 @@
 User Story & Acceptance Criteria :
 
     //As a market watcher, I want to sort results so that I can see the latest deals first.
-        /The system must record the history of each property.
+        /The system must record the creation date of each property.
     //As a user, I want to save my search criteria so that I can quickly check for updates later without re-entering filters.
         /There should be a history for each user.
     //As a user(customer) , I want to filter by ( price,location,latest,estate type,area,room count, contract type) so that I can find my interests .
@@ -16,7 +16,7 @@ User Story & Acceptance Criteria :
 
 Edge Cases :
 
-    //If the user searches for a location that does not exist => a "nothing" message should appear.
+    //If the user searches for a location that does not exist => returns a 200 OK with an empty array: { "data": [] }
     
     //If the user enters negative values => a "Invalid Input" message should appear.
     
@@ -32,7 +32,7 @@ Data Entities :
 API Structure :
     Method : GET
 
-    Path : /api/v1/properties/filter
+    Path : /api/v1/properties
 
     Description : Filter by ( price, area, location ,latest ,estate type ,contract type , room count )
 
@@ -40,12 +40,19 @@ API Structure :
         minPrice (decimal)
         maxPrice (decimal)
         location (string)
-        roomCount (int)
-        area (decimal)
+        minRooms (int)
+        minArea (decimal)
+        maxArea (decimal)
         estateType (string)
         contractType (string)
+        Page    (int)
+        PageSize (int)
+        sortBy : string (values : price,area,latest)
+        sortOrder : string (values : asc ,desc)
+
 
     status code :
+
         Success Response : 200 (ok)
             {
                 "totalItems": 45,
@@ -57,6 +64,7 @@ API Structure :
                             { "id": ,... }
                         ]
             }
+
         Error Responses :
             400 : (Bad Request)=>If the input data is missing required fields
                 {
