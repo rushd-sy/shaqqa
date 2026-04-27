@@ -1,5 +1,6 @@
 **User Story:**
-**As a user** (property owner or broker) **I want** to add a property with its property details **so that** I can publish an advertisement on the program.
+- **As a user** (property owner or broker) **I want** to add a property with its property details and verified ownership documents **so that** I can publish verifiable advertisement on the program to potential customers.
+- **As a user** (verfied broker), **I want** to publish propertise without ownership documents, **so that** I can publish all properties advertisements that available from my real estate office.
 
 **Acceptance Criteria:**  
 The user (property owner) and all interested customers can see the property.
