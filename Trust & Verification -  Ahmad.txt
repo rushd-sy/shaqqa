@@ -25,7 +25,7 @@ So that: Users can recognize trusted agents on the platform
 Acceptance Criteria:
 • The admin can only grant the badge to users with role = agent
 • trust_score must be >= 80 at the time of granting
-• The agent’s profile photo must be verified and approved by the admin (photo_verified_by_admin = true)
+• The agent’s profile photo must be verified and approved by the admin (has_photo_verified_by_admin = true)
 • granted_by, granted_at, and granted_at_score are recorded
 • The badge status is set to active immediately upon granting
 
@@ -71,10 +71,19 @@ Acceptance Criteria:
 • VerificationRequest.status defaults to pending
 • Property.status defaults to pending
 • The listing is not visible to other users until status = active
+• A clear and deterministic state mapping between VerificationRequest.status and Property.status must be defined and enforced as follows:
+ – pending ⟶ Property.status = pending
+ – approved ⟶ Property.status = active
+ – rejected ⟶ Property.status = rejected
+ – needs_edit ⟶ Property.status = pending
+• State transitions must be deterministic with no undefined or implicit behaviors
+• Property.status can only become active through an approved VerificationRequest transition
 
 Edge Cases:
-‣ User submits a listing without required fields -> request is rejected before creating VerificationRequest
-‣ Edits are requested and the user does not respond within one week -> request is automatically rejected and status changes to rejected
+‣ If a listing is submitted without required fields → the operation is rejected before creating Property or VerificationRequest
+‣ If edits are requested and the user does not respond within one week → VerificationRequest.status is set to rejected and Property.status = rejected
+‣ A property cannot become visible (active) except through an explicit approved transition
+
 
 US-02 — Upload Supporting Documents
 ------------------------------------------
@@ -182,7 +191,7 @@ VerificationRequest:
 - reviewed_by: (FK → User.id, nullable)
 - status: ENUM (pending, approved, needs_edit, rejected)
 - documents_url: TEXT[]
-- admin_note: TEXT
+- admin_note: TEXT (nullable)
 - created_at: TIMESTAMP
 - reviewed_at: TIMESTAMP
 
@@ -224,7 +233,6 @@ Accept: application/json
 Request:
 {
   "agent_id": "12",
-  "granted_by": "845",
   "badge_name": "Professional Agent",
   "granted_at_score": 82.5
 }
@@ -250,7 +258,6 @@ Accept: application/json
 Request:
 {
   "status": "revoked",
-  "revoked_by": "154",
   "revoked_at_score": 58.0
 }
 
@@ -264,5 +271,6 @@ Response:
   "status": "revoked",
   "granted_at": "2026-04-20T09:00:00Z",
   "revoked_at": "2026-04-29T12:00:00Z",
-  "granted_at_score": 82.5
+  "granted_at_score": 82.5,
+  "revoked_at_score": 58.0
  }
