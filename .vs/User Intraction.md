@@ -14,7 +14,7 @@
 ### Entities & Attributes
 * **User**
 * **Property**
-* **Favorite**: `favorite_id`, `user_id`, `property_id`, `created_at`.
+* **Favorite**: `favorite_id`, `user_id`, `property_id`, `created_at`,(Composite Unique Index on `user_id` & `property_id`).
 
 * **Booking_Visit**: `booking_id`, `user_id`, `property_id`, `created_at`, `appointment_datetime`, `status ENUM('pending', 'confirmed', 'cancelled')` , `availability_id `.
 
@@ -44,6 +44,8 @@
   ```json
   {
     "message": "Property booked successfully."
+    "booking_id": 123
+    "status": "pending"
   }
   ```
 * **Edge Cases**:
