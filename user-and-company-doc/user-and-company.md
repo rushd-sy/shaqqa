@@ -321,3 +321,37 @@ Normal customer become broker after approvement by program admin OR they added m
     *   `401 Unauthorized`: Invalid or expired token.
     *   `403 Forbidden`: Only Shaqqa Admins can perform this action.
     *   `409 Conflict`: The target user is already linked to a company (e.g., as `COMPANY_ADMIN` or `COMPANY_STAFF`), which prevents role migration without manual deletion or manual separation from the company first.
+
+# 4. Database Schema (Entities & Attributes)
+
+## 1. Table: `Company`
+Extended to handle basic status for login/access control.
+*   **`id_company`** (PK, UUID/INT): Unique identifier for the company.
+*   **`name`** (VARCHAR): Main company contact name.
+*   **`phone_number`** (VARCHAR, Unique): Main company contact phone.
+*   **`id_location`** (FK -> `Location.id_location`, Nullable): Corporate office location reference.
+*   **`is_active`** (BOOLEAN): Default `TRUE`. If `FALSE`, all company staff under this company are prevented from logging in.
+*   **`created_at`** (TIMESTAMP): Creation date.
+
+## 2. Table: `User`
+Extended for authentication, standardizing roles, and linking to companies.
+*   **`id_user`** (PK, UUID/INT): Unique identifier for the user.
+*   **`id_company`** (FK -> `Company.id_company`, Nullable): Populated only for users with the role `COMPANY_ADMIN` and `COMPANY_STAFF`.
+*   **`username`** (VARCHAR, Unique): Unique identifier name (optional).
+*   **`phone`** (VARCHAR, Unique): Primary login identifier (with country code).
+*   **`first_name`** (VARCHAR): User's first name.
+*   **`last_name`** (VARCHAR): User's last name.
+*   **`role`** (ENUM): User role on the system. Values: `CUSTOMER`, `BROKER`, `COMPANY_ADMIN`, `COMPANY_STAFF`, `SHAQQA_ADMIN`, `SHAQQA_STAFF`.
+*   **`is_active`** (BOOLEAN): Default `TRUE`. Used by admins to ban or suspend users.
+*   **`created_at`** (TIMESTAMP): User registration timestamp.
+
+## 3. Table: `Broker_Request`
+Handles the workflow of a `CUSTOMER` applying to become a `BROKER`.
+*   **`id_request`** (PK, UUID/INT): Unique identifier for the broker application.
+*   **`id_user`** (FK -> `User.id_user`): The customer submitting the request.
+*   **`status`** (ENUM): The current state of the request. Values: `PENDING`, `APPROVED`, `REJECTED`.
+*   **`reviewed_by`** (FK -> `User.id_user`, Nullable): The Shaqqa Admin or Staff member who handled the request.
+*   **`request_notes`** (TEXT, Nullable): Form details filled out by the customer.
+*   **`document_id`** (FK -> `Document.id_document`): Required identification/license document reference to verify the broker.
+*   **`created_at`** (TIMESTAMP): Request creation date.
+*   **`updated_at`** (TIMESTAMP): Timestamp of the last status change.
