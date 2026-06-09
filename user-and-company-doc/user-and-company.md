@@ -39,6 +39,7 @@ Normal customer become broker after approvement by program admin OR they added m
 - As an Shaqqa admin, I want to see statistics about every section in the app, so that help program owners to take future decisions.
 - As a Shaqqa admin, I want to create a new Company profile and simultaneously assign an initial user as the `COMPANY_ADMIN`, so they can start managing their company.
 - As a Shaqqa admin, I want to be able to disable (`is_active = false`) a user or an entire company, so that I can block login access for policy violations.
+- As a Shaqqa admin, I want to create new user accounts assigned the `SHAQQA_STAFF` role, so that my staff members can assist me in managing reports, advertisements, and broker requests.
 
 ### Shaqqa Staff
 - As a staff member, I want to have special credintials, login like any other user (using phone number), so that facilitate login process to me, and I start my job.
@@ -68,6 +69,12 @@ Normal customer become broker after approvement by program admin OR they added m
     *   A `COMPANY_ADMIN` can submit staff details. The system creates a new user, sets role to `COMPANY_STAFF`, and assigns the admin's `id_company`.
 *   **Edge Cases:**
     *   The phone number provided for the new staff member is already registered as a `CUSTOMER` in the app. (System should either reject with "Phone number already exists" or offer a flow to invite/migrate the existing user to the company).
+
+## **Feature: Adding Shaqqa Staff**
+*   **Acceptance Criteria:**
+    *   A `SHAQQA_ADMIN` can submit staff details. The system creates a new user and sets their role to `SHAQQA_STAFF`.
+*   **Edge Cases:**
+    *   The phone number provided for the new Shaqqa staff member is already registered in the system (e.g., as a `CUSTOMER` or independent `BROKER`). The system should allow upgrading or migrating their role to `SHAQQA_STAFF` after confirmation, or block the operation if they are currently linked to an active company as a `COMPANY_ADMIN` or `COMPANY_STAFF`.
 
 ---
 
