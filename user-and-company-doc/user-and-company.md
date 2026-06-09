@@ -90,12 +90,12 @@ Normal customer become broker after approvement by program admin OR they added m
     }
     ```
 *   **Error Responses:**
-    *   `404 Not Found`: Phone number not registered.
     *   `429 Too Many Requests`: User requested OTP too many times in a short period.
+    *   `403 Forbidden`: This phone number belongs to an account that has been explicitly deactivated.
 
 ## 2. Verify OTP (Final Login)
 *   **Endpoint:** `POST /api/auth/verify-otp`
-*   **Description:** Verifies the OTP and returns the session token.
+*   **Description:** Verifies the OTP and returns the session token. If the phone number does not exist in the database, a new user record is automatically created with the role `CUSTOMER`.
 *   **Request Body:**
     ```json
     {
@@ -104,15 +104,31 @@ Normal customer become broker after approvement by program admin OR they added m
     }
     ```
 *   **Response (200 OK):**
+    *   Option A: Existing User (e.g., Company Staff)
     ```json
     {
       "token": "eyJhbGciOiJIUzI1...",
       "user": {
         "id_user": 105,
         "first_name": "John",
+            "Last_name": "Doe",
         "role": "COMPANY_STAFF",
         "id_company": 12
       }
+    }
+    ```
+    *   Option B: New User (Registration)
+    ```json
+    {
+        "token": "eyJhbGciOiJIUzI1...",
+        "is_new_user": true,
+        "user": {
+            "id_user": 106,
+            "first_name": null,
+            "Last_name": null,
+            "role": "CUSTOMER",
+            "id_company": null
+        }
     }
     ```
 *   **Error Responses:**
@@ -144,6 +160,8 @@ Normal customer become broker after approvement by program admin OR they added m
 ## 4. Review Broker Request (Admin/Staff)
 *   **Endpoint:** `PUT /api/admin/broker-requests/{id_request}`
 *   **Description:** **Shaqqa Admin OR Shaqqa Staff** reviews and updates request status.
+*   **Path Parameters:**
+        *   `id_request` (integer, required): The unique ID of the broker request being reviewed (corresponds to the `request_id` returned in the creation step).
 *   **Headers:** `Authorization: Bearer <Shaqqa_Admin_or_Staff_Token>`
 *   **Request Body:**
     ```json
@@ -156,28 +174,143 @@ Normal customer become broker after approvement by program admin OR they added m
     ```json
     {
       "message": "Status updated. User role is now BROKER."
+      "data": {
+        "request_id": 45,
+        "user_id": 101,
+        "status": "APPROVED",
+        "reviewed_by": 7, 
+        "updated_at": "2026-06-09T11:00:00Z"
+      }
     }
     ```
+*   **Error Responses:**
+    *    `400 Bad Request`: Invalid status value provided.
+    *    `401 Unauthorized`: Missing or invalid token.
+    *    `403 Forbidden`: User is not a Shaqqa Admin or Staff.
+    *    `404 Not Found`: No broker request found with the provided `id_request`.
 
-## 5. Company Admin Adds Staff
-*   **Endpoint:** `POST /api/companies/staff`
-*   **Description:** Registers a new staff member. (No password required; user will log in via OTP).
+## 5. Check Phone Number Registration
+*   **Endpoint:** `POST /api/companies/staff/check`
+*   **Description:** Used by the Admin to check if a phone number already exists in the system before adding them as staff. This determines whether the frontend needs to collect the user's name.
 *   **Headers:** `Authorization: Bearer <Company_Admin_Token>`
 *   **Request Body:**
     ```json
     {
-      "phone": "+1987654321",
-      "first_name": "Jane",
+      "phone": "+1234567890"
+    }
+    ```
+*   **Response (200 OK):**
+    *   **If the user already exists in the system:**
+    ```json
+    {
+      "exists": true,
+      "first_name": "John",
+      "last_name": "Doe",
+      "message": "User exists. First and last name are not required."
+    }
+    ```
+    *   **If the user does not exist:**
+    ```json
+    {
+      "exists": false,
+      "message": "User not found."
+    }
+    ```
+*   **Error Responses:**
+    *   `401 Unauthorized`: Invalid or expired token.
+    *   `403 Forbidden`: Only Company Admins are authorized to check phone numbers.
+
+## 6. Company Admin Adds Staff
+*   **Endpoint:** `POST /api/companies/staff`
+*   **Description:** Finalizes adding the staff member to the company based on the results of the check endpoint.
+*   **Headers:** `Authorization: Bearer <Company_Admin_Token>`
+*   **Request Body:**
+    *   **Payload if `exists` was `false` (Names required):**
+    ```json
+    {
+      "phone": "+1234567890",
+      "first_name": "John",
       "last_name": "Doe"
+    }
+    ```
+    *   **Payload if `exists` was `true` (Names omitted):**
+    ```json
+    {
+      "phone": "+1234567890"
     }
     ```
 *   **Response (201 Created):**
     ```json
     {
-      "message": "Staff account created. They can now log in using their phone number.",
+      "message": "Staff member successfully processed and linked to the company.",
       "user_id": 208
     }
     ```
 *   **Error Responses:**
-    *   `409 Conflict`: This phone number is already registered to another user.
+    *   `400 Bad Request`: Missing `first_name` or `last_name` for a phone number that does not exist.
+    *   `401 Unauthorized`: Invalid or expired token.
     *   `403 Forbidden`: Only Company Admins can perform this action.
+    *   `409 Conflict`: This phone number is already registered as staff for a company.
+
+## 7. Check Phone Number Registration (Shaqqa Admin)
+*   **Endpoint:** `POST /api/admin/staff/check`
+*   **Description:** Used by a Shaqqa Admin to check if a phone number already exists in the system before registering them as Shaqqa Staff. This determines whether the frontend needs to collect the user's name details.
+*   **Headers:** `Authorization: Bearer <Shaqqa_Admin_Token>`
+*   **Request Body:**
+    ```json
+    {
+      "phone": "+123456789"
+    }
+    ```
+*   **Response (200 OK):**
+    *   **If the user already exists in the system:**
+    ```json
+    {
+      "exists": true,
+      "first_name": "John",
+      "last_name": "Doe",
+      "message": "User exists. First and last name are not required."
+    }
+    ```
+    *   **If the user does not exist:**
+    ```json
+    {
+      "exists": false,
+      "message": "User not found."
+    }
+    ```
+*   **Error Responses:**
+    *   `401 Unauthorized`: Invalid or expired token.
+    *   `403 Forbidden`: Only Shaqqa Admins are authorized to perform this check.
+
+## 8. Shaqqa Admin Adds Staff
+*   **Endpoint:** `POST /api/admin/staff`
+*   **Description:** Finalizes registering and setting up a Shaqqa Staff member.
+*   **Headers:** `Authorization: Bearer <Shaqqa_Admin_Token>`
+*   **Request Body:**
+    *   **Payload if `exists` was `false` (Names required):**
+    ```json
+    {
+      "phone": "+1234567890",
+      "first_name": "John",
+      "last_name": "Doe",
+    }
+    ```
+    *   **Payload if `exists` was `true` (Names omitted):**
+    ```json
+    {
+      "phone": "+1234567890"
+    }
+    ```
+*   **Response (201 Created):**
+    ```json
+    {
+      "message": "Shaqqa Staff member successfully registered and role updated to Shaqqa Staff.",
+      "user_id": 305
+    }
+    ```
+*   **Error Responses:**
+    *   `400 Bad Request`: Missing `first_name` or `last_name` for a phone number that does not exist.
+    *   `401 Unauthorized`: Invalid or expired token.
+    *   `403 Forbidden`: Only Shaqqa Admins can perform this action.
+    *   `409 Conflict`: The target user is already linked to a company (e.g., as `COMPANY_ADMIN` or `COMPANY_STAFF`), which prevents role migration without manual deletion or manual separation from the company first.
