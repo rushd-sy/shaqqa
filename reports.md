@@ -10,6 +10,28 @@
     
 - **As an admin**, I want to update the status of a report (from 'pending' to 'resolved' or 'rejected'), so that I can track which issues have been handled.
     
+### Acceptance Criteria
+
+- Given a user is viewing an existing property
+When the user submits a report with a valid reason from the predefined list
+Then the system should store the report with a 'pending' status
+And return a 201 Created response with a success message
+
+- Given a user is attempting to report a property
+When the user submits the report without providing a 'reason'
+Then the system should reject the request
+And return a 400 Bad Request response with a validation error message
+
+- Given a user has already reported a specific property
+And the previous report's status is still 'pending' or 'under_review'
+When the user attempts to submit another report for the same property
+Then the system should prevent the duplication
+And return a 409 Conflict response
+
+- Given a user is attempting to report a property
+When the user submits a report for a propertyId that does not exist in the database
+Then the system should reject the request
+And return a 404 Not Found response
 
 ### Entities & Attributes
 
