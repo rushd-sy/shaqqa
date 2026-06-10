@@ -16,10 +16,8 @@
 - **User**
     
 - **Property**
-    
-- **Report_Reason**: `reason_id`, `title` ('Spam', 'Fake Listing', 'Offensive Content'), `is_active`.
-    
-- **Report**: `report_id`, `User_id`, `property_id`, `reason_id`, `description` (Optional TEXT), `status ENUM('pending', 'under_review', 'resolved', 'rejected')`, `created_at`, (Optional: Composite Unique Index on `reporter_id` & `property_id`).
+
+- **Report**: `report_id`, `user_id`, `property_id`, `reason ENUM('fake_listing', 'spam', 'inappropriate', 'other')`, `description`, `status ENUM('pending', 'under_review', 'resolved', 'rejected')`, `created_at`, (Composite Unique Index on `user_id` & `property_id`).
     
 
 ### API Documentation
@@ -43,7 +41,7 @@ JSON
 {
   "reporterId": 105,
   "propertyId": 20,
-  "reasonId": 3,
+  "reason": "fake_listing",
   "description": "The images used in this property listing are fake and taken from another website."
 }
 ```
