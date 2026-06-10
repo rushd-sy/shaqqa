@@ -90,14 +90,3 @@ API Structure :
 
 
 
-
-    Method : GET
-
-    Path : api/v1/history
-
-    Description : get recent visits or searches
-
-    Query Parameters : Empty
-
-
-
