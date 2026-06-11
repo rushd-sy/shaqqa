@@ -32,7 +32,7 @@ Deleted Property Handling: If a property in the user's "Recent Visits" list is d
 1. Save Recent Visits or Searches
 Endpoint: POST /api/v1/recent-visits
 
-Description: save recent visits or searches
+Description: save recent visits
 
 Request Body:
 
@@ -41,7 +41,7 @@ JSON
   "user_id": "",
   "property_id": ""
 }
-Response (200 OK Status):
+Response (201 OK Status):
 
 JSON
 {
@@ -114,7 +114,7 @@ Response (201 Created Status):
 JSON
 {
   "message": "Search history saved successfully.",
-  "id": 101
+  "id": ""
 }
 4. Get Search History
 Endpoint: GET /api/user/search-history
@@ -144,6 +144,8 @@ JSON
 }
 4. Database Schema (Entities & Attributes)
 1. Table: PropertyViews
+PropertyViews_id (PK):
+
 user_id (FK):
 
 property_id (FK):
@@ -151,6 +153,8 @@ property_id (FK):
 viewed_at (DATETIME):
 
 2. Table: FilterHistory
+FilterHistory_id (PK):
+
 user_id (FK):
 
 filters_json (NVARCHAR(MAX)):
