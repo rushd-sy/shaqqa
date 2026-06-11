@@ -10,6 +10,40 @@
 * **As a user**, I want to confirm whether my reservation has been cancelled or not.
 
 ---
+### Acceptance Criteria
+- Given The user is logged in and browsing a specific property.
+When: They click the "Add to Favorites" button.
+Then: The property is saved to the Favorites table with the current time recorded in created_at, and a confirmation message is displayed indicating successful addition.
+
+- Given The property is already in the user's favorites list.
+When: The user attempts to add it again.
+Then: The system blocks the operation and returns a 409 Conflict error to prevent duplication in the database.
+
+- When The user clicks the "Remove" button from the favorites list.
+Then The record for favorite_id is deleted from the database and the property disappears from the list immediately.
+
+- When The user opens the "Favorites" page.
+Then Data is fetched in descending order based on the created_at field.
+
+- When The user opens the booking page for a specific property.
+Then The system displays only the available times from the Property_Availability table where is_booked = false.
+
+- Given The user selects an available date and clicks "Confirm Booking".
+When The request is sent to /api/booking.
+Then:
+A new record is created in Booking_Visit, and its status is automatically set to 'pending'.
+The appointment status in Property_Availability is changed to 'is_booked' = true to prevent another user from booking it.
+The user receives a booking success message showing the booking number and its current status as "pending".
+
+- Given The user has an upcoming booking with a pending or confirmed status.
+When The user clicks the "Cancel Booking" button.
+Then:
+The booking status in the Booking_Visit table changes to status = 'cancelled'.
+The Property_Availability table for this appointment is updated to is_booked = false.
+The interface is immediately updated to show the user a visual confirmation that the booking is now "cancelled".
+
+- When The user opens the "My Appointments" page.
+Then The system displays a list of all upcoming bookings with the status of each booking clearly shown.
 
 ### Entities & Attributes
 * **User**
