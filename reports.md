@@ -4,9 +4,9 @@
     
 - **As a user**, I want to optionally add a text description to my report, so that I can provide more context or proof about the violation.
     
-- **As a user**, I want to receive a success message confirming that my report has been submitted.
+- **As a user**, I want to receive a success message confirming that my report has been submitted , so that I know the system successfully received my request
     
-- **As an admin**, I want to see a list of all submitted reports sorted by `created_at`, so I can review the oldest  issues first.
+- **As an admin**, I want to see a list of all submitted reports sorted by `created_at`, so I can review the most recent issues first.
     
 - **As an admin**, I want to update the status of a report (from 'pending' to 'resolved' or 'rejected'), so that I can track which issues have been handled.
     
@@ -32,6 +32,16 @@ And return a 409 Conflict response
 When the user submits a report for a propertyId that does not exist in the database
 Then the system should reject the request
 And return a 404 Not Found response
+
+- Given the user is not logged in 
+When the user reports an ad, 
+Then the system will reject the report 
+And return 401 Unauthorized.
+
+- Given an authenticated user with the role of Admin or Broker
+When they attempt to submit a report for an ad 
+Then the system should reject the request
+And return a 403 Forbidden status code.
 
 ### Entities & Attributes
 
@@ -61,8 +71,8 @@ JSON
 
 ```
 {
-  "reporterId": 105,
-  "propertyId": 20,
+  "userId": 105,
+  "id_advertisement" : 25,
   "reason": "fake_listing",
   "description": "The images used in this property listing are fake and taken from another website."
 }
@@ -88,5 +98,6 @@ JSON
     * **404 Not Found**: If the `propertyId` or `reasonId` does not exist in the database.
     * **409 Conflict**: If the user has already reported this specific property and the report is still pending.
     * **400 Bad Request**: If the sent data is incomplete (missing `reasonId`).
-
+    * **401 Unauthorized**: If the user reports without logging in.
+    * **403 Forbidden** : If the admin or broker reports . 
 ---
