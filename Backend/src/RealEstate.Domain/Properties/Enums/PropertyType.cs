@@ -1,7 +1,6 @@
-// Enums/PropertyType.cs
-namespace RealEstate.Domain.RealEstate.Enume;
+namespace RealEstate.Domain.Properties.Enums;
 
-public enum RealEstateType
+public enum PropertyType
 {
     Apartment = 1,
     Villa = 2,

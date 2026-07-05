@@ -1,5 +1,4 @@
-// Enums/Role.cs
-namespace RealEstate.Domain.Enums;
+namespace RealEstate.Domain.Users.Enums;
 
 public enum Role
 {

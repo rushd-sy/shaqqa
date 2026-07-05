@@ -1,5 +1,4 @@
-// Enums/NotificationType.cs
-namespace RealEstate.Domain.Enums;
+namespace RealEstate.Domain.Users.Notifications.Enums;
 
 public enum NotificationType
 {

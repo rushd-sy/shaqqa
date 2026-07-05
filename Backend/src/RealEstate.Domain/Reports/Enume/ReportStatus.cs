@@ -1,5 +1,4 @@
-// Enums/ReportStatus.cs
-namespace RealEstate.Domain.Enums;
+namespace RealEstate.Domain.Reports.Enums;
 
 public enum ReportStatus
 {

@@ -1,5 +1,4 @@
-// Enums/ReportReason.cs
-namespace RealEstate.Domain.Enums;
+namespace RealEstate.Domain.Reports.Enums;
 
 public enum ReportReason
 {

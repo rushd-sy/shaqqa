@@ -1,10 +1,13 @@
-// Property.cs
 using RealEstate.Domain.Common;
-using RealEstate.Domain.RealEstate.Enume;
-using RealEstate.Domain.User;
-namespace RealEstate.Domain.RealEstate;
+using RealEstate.Domain.Favorites;
+using RealEstate.Domain.Properties.Enums;
+using RealEstate.Domain.Properties.PropertyImages;
+using RealEstate.Domain.Reports;
+using RealEstate.Domain.Users;
+using RealEstate.Domain.VerificationRequests;
+namespace RealEstate.Domain.Properties;
 
-public class RealEstate : AuditableEntity
+public class Property : AuditableEntity
 {
     public Guid OwnerId { get; set; }
     public User Owner { get; set; } = null!;
@@ -12,11 +15,11 @@ public class RealEstate : AuditableEntity
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
 
-    public RealEstateType PropertyType { get; set; }
+    public PropertyType PropertyType { get; set; }
     public LandType? LandType { get; set; }
     public ListingType ListingType { get; set; }
     public LegalStatus LegalStatus { get; set; }
-    public RealEstateStatus Status { get; set; }
+    public PropertyStatus Status { get; set; }
 
     public decimal Price { get; set; }
     public double Area { get; set; }

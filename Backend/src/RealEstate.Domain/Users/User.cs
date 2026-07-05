@@ -1,8 +1,11 @@
-// User.cs
 using RealEstate.Domain.Common;
-using RealEstate.Domain.User.Enume;
+using RealEstate.Domain.Favorites;
+using RealEstate.Domain.Properties;
+using RealEstate.Domain.Reports;
+using RealEstate.Domain.Users.Enums;
+using RealEstate.Domain.Users.Notifications;
 
-namespace RealEstate.Domain.User;
+namespace RealEstate.Domain.Users;
 
 public class User : AuditableEntity
 {
@@ -13,7 +16,7 @@ public class User : AuditableEntity
     public Role Role { get; set; }
     public bool IsActive { get; set; } = true;
 
-    public ICollection<RealEstate> Properties { get; set; } = new List<Property>();
+    public ICollection<Property> Properties { get; set; } = new List<Property>();
     public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     public ICollection<Report> Reports { get; set; } = new List<Report>();

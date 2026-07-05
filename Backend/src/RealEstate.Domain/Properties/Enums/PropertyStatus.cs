@@ -1,7 +1,6 @@
-// Enums/PropertyStatus.cs
-namespace RealEstate.Domain.RealEstate.Enume;
+namespace RealEstate.Domain.Properties.Enums;
 
-public enum RealEstateStatus
+public enum PropertyStatus
 {
     PendingVerification = 1,
     Active = 2,

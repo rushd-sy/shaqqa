@@ -1,13 +1,14 @@
-// Report.cs
 using RealEstate.Domain.Common;
-using RealEstate.Domain.RealEstate;
+using RealEstate.Domain.Properties;
+using RealEstate.Domain.Reports.Enums;
+using RealEstate.Domain.Users;
 
-namespace RealEstate.Domain.Report;
+namespace RealEstate.Domain.Reports;
 
 public class Report : AuditableEntity
 {
     public Guid PropertyId { get; set; }
-    public RealEstate Property { get; set; } = null!;
+    public Property Property { get; set; } = null!;
 
     public Guid ReportedByUserId { get; set; }
     public User ReportedByUser { get; set; } = null!;

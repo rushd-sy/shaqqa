@@ -1,5 +1,4 @@
-// Enums/LegalStatus.cs
-namespace RealEstate.Domain.RealEstate.Enume;
+namespace RealEstate.Domain.Properties.Enums;
 
 public enum LegalStatus
 {

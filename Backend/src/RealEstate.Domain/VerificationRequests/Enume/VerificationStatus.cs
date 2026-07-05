@@ -1,5 +1,4 @@
-// Enums/VerificationStatus.cs
-namespace RealEstate.Domain.Enums;
+namespace RealEstate.Domain.VerificationRequests.Enums;
 
 public enum VerificationStatus
 {

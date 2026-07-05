@@ -1,8 +1,7 @@
-// Notification.cs
 using RealEstate.Domain.Common;
-using RealEstate.Domain.Enums;
+using RealEstate.Domain.Users.Notifications.Enums;
 
-namespace RealEstate.Domain.Entities;
+namespace RealEstate.Domain.Users.Notifications;
 
 public class Notification : AuditableEntity
 {

@@ -1,5 +1,4 @@
-// Enums/LandType.cs
-namespace RealEstate.Domain.RealEstate.Enume;
+namespace RealEstate.Domain.Properties.Enums;
 
 public enum LandType
 {

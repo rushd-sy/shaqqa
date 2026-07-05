@@ -1,8 +1,9 @@
-// VerificationRequest.cs
 using RealEstate.Domain.Common;
-using RealEstate.Domain.Enums;
+using RealEstate.Domain.Properties;
+using RealEstate.Domain.Users;
+using RealEstate.Domain.VerificationRequests.Enums;
 
-namespace RealEstate.Domain.Entities;
+namespace RealEstate.Domain.VerificationRequests;
 
 public class VerificationRequest : AuditableEntity
 {
