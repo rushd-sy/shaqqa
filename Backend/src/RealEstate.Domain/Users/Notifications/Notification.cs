@@ -5,6 +5,10 @@ namespace RealEstate.Domain.Users.Notifications;
 
 public class Notification : AuditableEntity
 {
+    public Notification(Guid id) : base(id)
+    {
+    }
+
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
 

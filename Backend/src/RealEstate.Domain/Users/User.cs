@@ -9,6 +9,10 @@ namespace RealEstate.Domain.Users;
 
 public class User : AuditableEntity
 {
+    public User(Guid id) : base(id)
+    {
+    }
+
     public string FullName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;

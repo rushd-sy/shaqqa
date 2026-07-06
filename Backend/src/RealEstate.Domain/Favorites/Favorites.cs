@@ -6,6 +6,10 @@ namespace RealEstate.Domain.Favorites;
 
 public class Favorite : AuditableEntity
 {
+    public Favorite(Guid id) : base(id)
+    {
+    }
+
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
 

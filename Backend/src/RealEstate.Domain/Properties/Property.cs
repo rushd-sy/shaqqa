@@ -9,6 +9,10 @@ namespace RealEstate.Domain.Properties;
 
 public class Property : AuditableEntity
 {
+    public Property(Guid id) : base(id)
+    {
+    }
+
     public Guid OwnerId { get; set; }
     public User Owner { get; set; } = null!;
 
