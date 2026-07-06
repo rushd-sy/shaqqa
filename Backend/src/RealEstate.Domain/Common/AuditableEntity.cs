@@ -1,7 +1,13 @@
 namespace RealEstate.Domain.Common;
-public abstract class AuditableEntity
+public abstract class AuditableEntity : Entity
 {
+     protected AuditableEntity(Guid id) : base(id)
+     {
+            
+     }
+
      public DateTimeOffset CreatedAtUtc { get; set; }
+
      public string? CreatedBy { get; set; }
 
      public DateTimeOffset LastModifiedUtc { get; set; }
