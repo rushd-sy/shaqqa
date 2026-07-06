@@ -7,9 +7,9 @@ namespace RealEstate.Domain.VerificationRequests;
 
 public class VerificationRequest : AuditableEntity
 {
-    
-
-
+    public VerificationRequest(Guid id) : base(id)
+    {
+    }
 
     public Guid PropertyId { get; set; }
     public Property Property { get; set; } = null!;
