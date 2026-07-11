@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Infrastructure.Identity;
-using RealEstate.Infrastructure.persistence;
+using RealEstate.Infrastructure.Persistence;
 
 namespace RealEstate.API.Extensions
 {
@@ -9,8 +9,14 @@ namespace RealEstate.API.Extensions
     {
         public static IServiceCollection AddDatabaseService(this IServiceCollection services, IConfiguration configuration)
         {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+            }
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(connectionString));
             return services;
         }
 
