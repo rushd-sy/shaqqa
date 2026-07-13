@@ -5,7 +5,7 @@ As a market watcher, I want to sort results so that I can see the latest deals f
 Customer
 As a user (customer), I want to filter by (price, location, latest, estate type, area, room count, contract type) so that I can find my interests.
 
-2. Acceptance Criteria & Edge Cases
+2. Acceptance Criteria \& Edge Cases
 Feature: Property Filtering and Sorting
 Acceptance Criteria:
 
@@ -29,14 +29,14 @@ There should be an option to clear all filters.
 
 Edge Cases:
 
-If the user searches for a location that does not exist => returns a 200 OK with an empty array: { "data": [] }.
+If the user searches for a location that does not exist => returns a 200 OK with an empty array: { "data": \[] }.
 
 If the user enters negative values => an INVALID INPUT message should appear.
 
 If the user enters an inappropriate value for the field, such as String instead of Int => an INVALID INPUT message should appear.
 
-3. API Endpoints (Login & Roles)
-1. Filter and Sort Properties
+3. API Endpoints (Login \& Roles)
+4. Filter and Sort Properties
 Endpoint: GET /api/v1/properties
 
 Description: Filter by (price, area, location, latest, estate type, contract type, room count)
@@ -71,18 +71,18 @@ Response (200 OK Status):
 
 JSON
 {
-  "totalItems": 45,
-  "totalPages": 5,
-  "currentPage": 1,
-  "pageSize": 10,
-  "data": [
-    {
-      "id": "..."
-    },
-    {
-      "id": "..."
-    }
-  ]
+"totalItems": 45,
+"totalPages": 5,
+"currentPage": 1,
+"pageSize": 10,
+"data": \[
+{
+"id": "..."
+},
+{
+"id": "..."
+}
+]
 }
 Error Responses:
 
@@ -90,12 +90,13 @@ Error Responses:
 
 JSON
 {
-  "error": "Invalid Input",
-  "message": "Minimum price cannot be less than zero.",
-  "code": 400
+"error": "Invalid Input",
+"message": "Minimum price cannot be less than zero.",
+"code": 400
 }
 500 Internal Server Error: If a database connection failure occurs.
 
-4. Database Schema (Entities & Attributes)
-1. Table: User
-2. Table: Property
+4. Database Schema (Entities \& Attributes)
+5. Table: User
+6. Table: Property
+
