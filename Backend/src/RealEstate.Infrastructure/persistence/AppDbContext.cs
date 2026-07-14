@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Domain.Favorites;
+using RealEstate.Domain.Identity;
 using RealEstate.Domain.Properties;
 using RealEstate.Domain.Reports;
 using RealEstate.Domain.Users;
@@ -20,6 +21,7 @@ namespace RealEstate.Infrastructure.Persistence
         public DbSet<Favorite> Favorites => Set<Favorite>();
         public DbSet<VerificationRequest> VerificationRequests => Set<VerificationRequest>();
         public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<RefreshToken> RefreshToken => Set<RefreshToken>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +34,7 @@ namespace RealEstate.Infrastructure.Persistence
             modelBuilder.Ignore<Favorite>();
             modelBuilder.Ignore<VerificationRequest>();
             modelBuilder.Ignore<Notification>();
+            modelBuilder.Ignore<RefreshToken>();
         }
 
 
