@@ -6,11 +6,11 @@ namespace RealEstate.Domain.Identity;
 public class RefreshToken : AuditableEntity
 {
     public string? Token { get; }
-    public string? UserId { get; }
+    public Guid? UserId { get; }
     public DateTimeOffset ExpiresOnUtc { get; }
 
 
-    private RefreshToken(Guid id, string? token, string? userId, DateTimeOffset expiresOnUtc)
+    private RefreshToken(Guid id, string token, string userId, DateTimeOffset expiresOnUtc)
         : base(id)
     {
         Token = token;

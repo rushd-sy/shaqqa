@@ -35,11 +35,11 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context )
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSetting:Secret"]!)),
             ValidateIssuer = true,
-            ValidIssuer = _configuration["JwtSettings:Issuer"],
+            ValidIssuer = _configuration["JwtSetting:Issuer"],
             ValidateAudience = true,
-            ValidAudience = _configuration["JwtSettings:Audience"],
+            ValidAudience = _configuration["JwtSetting:Audience"],
             ValidateLifetime = false, // Ignore token expiration
             ClockSkew = TimeSpan.Zero
         };
@@ -64,7 +64,7 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context )
         var issuer = jwtSettings["Issuer"]!;
         var audience = jwtSettings["Audience"]!;
         var key = jwtSettings["SecretKey"]!;
-        var expires = DateTime.UtcNow.AddMinutes(int.Parse(jwtSettings["TokenExpirationInMinuets"]!));
+        var expires = DateTime.UtcNow.AddMinutes(int.Parse(jwtSettings["TokenExpirationInMinutes"]!));
 
         var claim = new List<Claim>
         {

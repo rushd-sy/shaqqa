@@ -21,7 +21,7 @@ namespace RealEstate.Infrastructure.Persistence
         public DbSet<Favorite> Favorites => Set<Favorite>();
         public DbSet<VerificationRequest> VerificationRequests => Set<VerificationRequest>();
         public DbSet<Notification> Notifications => Set<Notification>();
-        public DbSet<RefreshToken> RefreshToken => Set<RefreshToken>();
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
