@@ -92,7 +92,7 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context )
         var tokenHandler = new JwtSecurityTokenHandler();
         var securityToken = tokenHandler.CreateToken(descriptor);
      
-        var oldRefreshToken = await _context.RefreshToken
+        var oldRefreshToken = await _context.RefreshTokens
                 .Where(rt => rt.UserId == user.UserId)
                 .ExecuteDeleteAsync(ct);
 
@@ -107,7 +107,7 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context )
 
         var refreshToken = refreshTokenResult.Value;
         
-        _context.RefreshToken.Add(refreshToken);
+        _context.RefreshTokens.Add(refreshToken);
 
         await _context.SaveChangesAsync(ct);
 

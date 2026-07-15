@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using RealEstate.Application.Common.Interfaces;
+using RealEstate.Infrastructure.Identity;
 
 namespace RealEstate.Infrastructure;
 
@@ -29,12 +31,11 @@ public static class DependencyInjection
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!)
                     )
-
             };
         });
+        services.AddScoped<ITokenProvider,TokenProvider>();
 
         return services;
-   
         
     }
 }

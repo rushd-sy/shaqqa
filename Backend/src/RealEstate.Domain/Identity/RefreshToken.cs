@@ -5,8 +5,8 @@ namespace RealEstate.Domain.Identity;
 
 public class RefreshToken : AuditableEntity
 {
-    public string? Token { get; }
-    public Guid? UserId { get; }
+    public string Token { get; }
+    public string UserId { get; }
     public DateTimeOffset ExpiresOnUtc { get; }
 
 
@@ -17,7 +17,7 @@ public class RefreshToken : AuditableEntity
         UserId = userId;
         ExpiresOnUtc = expiresOnUtc;
     }
-        public static Result<RefreshToken> Create(Guid id, string? token, string? userId, DateTimeOffset expiresOnUtc)
+        public static Result<RefreshToken> Create(Guid id, string token, string userId, DateTimeOffset expiresOnUtc)
     {
         if (id == Guid.Empty)
         {
@@ -29,7 +29,7 @@ public class RefreshToken : AuditableEntity
             return RefreshTokenErrors.TokenRequired;
         }
 
-        if (string.IsNullOrWhiteSpace(userId))
+        if (string.IsNullOrEmpty(userId))
         {
             return RefreshTokenErrors.UserIdRequired;
         }
