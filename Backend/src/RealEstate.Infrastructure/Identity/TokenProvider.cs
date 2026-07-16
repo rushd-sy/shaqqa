@@ -35,7 +35,7 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context )
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSetting:Secret"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSetting:SecretKey"]!)),
             ValidateIssuer = true,
             ValidIssuer = _configuration["JwtSetting:Issuer"],
             ValidateAudience = true,
@@ -68,7 +68,7 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context )
 
         var claim = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub , user.UserId),
+            new(JwtRegisteredClaimNames.Sub , user.UserId.ToString()),
             new(JwtRegisteredClaimNames.Email , user.Email)
           
         };
