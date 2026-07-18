@@ -4,7 +4,8 @@ using System.Text;
 
 namespace RealEstate.Application.Identity.DTOs
 {
-    internal class SendOtpDto
+    public class SendOtpDto
     {
+        public string PhoneNumber { get; set; } = string.Empty;
     }
 }

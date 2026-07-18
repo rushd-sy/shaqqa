@@ -4,7 +4,9 @@ using System.Text;
 
 namespace RealEstate.Domain.PhoneVerifications
 {
-    internal interface IPhoneVerificationRepository
+    public interface IPhoneVerificationRepository
     {
+        Task AddAsync(PhoneVerification phoneVerification, CancellationToken cancellationToken= default);
+        Task<PhoneVerification?> GetLatestByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default);
     }
 }

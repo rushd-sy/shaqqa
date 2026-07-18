@@ -4,7 +4,10 @@ using System.Text;
 
 namespace RealEstate.Application.Identity.DTOs
 {
-    internal class RegisterWithOtpDto
+    public class RegisterWithOtpDto
     {
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string VerificationCode { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
     }
 }
