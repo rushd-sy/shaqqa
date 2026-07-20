@@ -1,4 +1,4 @@
-﻿namespace RealEstate.Domain.Common;
+namespace RealEstate.Domain.Common;
 public abstract class Entity
 {
     public Guid Id { get;  } 

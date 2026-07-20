@@ -1,7 +1,17 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using RealEstate.Domain.Advertisements;
+using RealEstate.Domain.Amenities;
+using RealEstate.Domain.Companies;
+using RealEstate.Domain.Documents;
+using RealEstate.Domain.DocumentTypes;
+using RealEstate.Domain.Enquiries;
 using RealEstate.Domain.Favorites;
+using RealEstate.Domain.Histories;
+using RealEstate.Domain.Locations;
 using RealEstate.Domain.Properties;
+using RealEstate.Domain.PropertyAmenities;
+using RealEstate.Domain.Reasons;
 using RealEstate.Domain.Reports;
 using RealEstate.Domain.Users;
 using RealEstate.Domain.Users.Notifications;
@@ -20,6 +30,16 @@ namespace RealEstate.Infrastructure.Persistence
         public DbSet<Favorite> Favorites => Set<Favorite>();
         public DbSet<VerificationRequest> VerificationRequests => Set<VerificationRequest>();
         public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<Company> Companies => Set<Company>();
+        public DbSet<Location> Locations => Set<Location>();
+        public DbSet<Amenity> Amenities => Set<Amenity>();
+        public DbSet<PropertyAmenity> PropertyAmenities => Set<PropertyAmenity>();
+        public DbSet<Advertisement> Advertisements => Set<Advertisement>();
+        public DbSet<DocumentType> DocumentTypes => Set<DocumentType>();
+        public DbSet<Document> Documents => Set<Document>();
+        public DbSet<History> Histories => Set<History>();
+        public DbSet<Reason> Reasons => Set<Reason>();
+        public DbSet<Enquiry> Enquiries => Set<Enquiry>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,11 +47,6 @@ namespace RealEstate.Infrastructure.Persistence
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
-            modelBuilder.Ignore<Property>();
-            modelBuilder.Ignore<Report>();
-            modelBuilder.Ignore<Favorite>();
-            modelBuilder.Ignore<VerificationRequest>();
-            modelBuilder.Ignore<Notification>();
         }
 
 
