@@ -1,4 +1,5 @@
 using RealEstate.API.Extensions;
+using RealEstate.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ builder.Services.AddDatabaseService(builder.Configuration);
 builder.Services.AddIdentityService();
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 var app = builder.Build();
 
 

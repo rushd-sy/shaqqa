@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace RealEstate.Domain.PhoneVerifications
+﻿using RealEstate.Domain.PhoneVerifications;
+namespace RealEstate.Application.Common.Interfaces
 {
     public interface IPhoneVerificationRepository
     {

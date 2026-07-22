@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿using RealEstate.Domain.Common;
 namespace RealEstate.Domain.PhoneVerifications
 {
     public class PhoneVerification : AuditableEntity
