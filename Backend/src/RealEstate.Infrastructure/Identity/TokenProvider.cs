@@ -20,9 +20,7 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
 {
     private readonly IConfiguration _configuration = configuration;
     private readonly AppDbContext _context = context;
-
     private readonly UserManager<User> _userManager =  userManager;
-
     public async Task<Result<TokenResponse>> GenerateJwtTokenAsync(AppUserDto user, CancellationToken ct = default)
     {
         var tokenResult = await CreateAsync(user, ct);
@@ -34,7 +32,6 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
 
         return  tokenResult.Value;
     }
-    
     public Result<ClaimsPrincipal> GetPrincipalFromExpiredToken(string token)
     {
         var tokenValidationParameters = new TokenValidationParameters
@@ -46,31 +43,28 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
             ValidateAudience = true,
             ValidAudience = _configuration["JwtSetting:Audience"],
             ValidateLifetime = false, // Ignore token expiration
-            ClockSkew = TimeSpan.Zero
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
       
-    try
-    {
-        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+        try
+        {
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
 
-        if (securityToken is not JwtSecurityToken jwtSecurityToken ||
-            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return RefreshTokenErrors.TokenInvalid;
+            }
+
+            return principal;
+        }
+        catch (SecurityTokenException)
         {
             return RefreshTokenErrors.TokenInvalid;
         }
-
-        return principal;
     }
-    catch (SecurityTokenException)
-    {
-        return RefreshTokenErrors.TokenInvalid;
-    }
-    }
-
-
-        public async Task<Result<TokenResponse>> CreateAsync(AppUserDto user, CancellationToken ct = default )
+    public async Task<Result<TokenResponse>> CreateAsync(AppUserDto user, CancellationToken ct = default )
     {
         var jwtSettings = _configuration.GetSection("JwtSetting");
 
@@ -79,21 +73,21 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
         var key = jwtSettings["SecretKey"]!;
         var expires = DateTime.UtcNow.AddMinutes(int.Parse(jwtSettings["TokenExpirationInMinutes"]!));
 
-        var claim = new List<Claim>
+        var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub , user.UserId.ToString()),
-            new(JwtRegisteredClaimNames.Email , user.Email)
+            new(JwtRegisteredClaimNames.PhoneNumber , user.Phone)
           
         };
 
         foreach (var role in user.Roles)
         {
-            claim.Add(new (ClaimTypes.Role,  role));
+            claims.Add(new (ClaimTypes.Role,  role));
         }
 
         var descriptor = new SecurityTokenDescriptor
         {
-          Subject = new ClaimsIdentity(claim),
+          Subject = new ClaimsIdentity(claims),
           Expires = expires,
           Issuer = issuer,
           Audience = audience,
@@ -130,93 +124,97 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
             ExpiresOnUtc = expires
         };
     }  
-  public async Task<Result<TokenResponse>> RefreshTokenAsync(string rawRefreshToken, CancellationToken ct = default)
-{
-    var incomingHash = HashToken(rawRefreshToken);
-
-    var existingToken = await _context.RefreshTokens
-        .FirstOrDefaultAsync(rt => rt.TokenHash == incomingHash, ct);
-
-    if (existingToken is null || !existingToken.IsActive)
+    public async Task<Result<TokenResponse>> RefreshTokenAsync(string rawRefreshToken, CancellationToken ct = default)
     {
-        return RefreshTokenErrors.TokenRequired;
-    }
+        var incomingHash = HashToken(rawRefreshToken);
 
-    var applicationUser = await _userManager.FindByIdAsync(existingToken.UserId.ToString());
+        var existingToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenHash == incomingHash, ct);
 
-    if (applicationUser is null)
-    {
-        return RefreshTokenErrors.TokenRequired;
-    }
+        if (existingToken is null || !existingToken.IsActive)
+        {
+            return RefreshTokenErrors.TokenRequired;
+        }
 
-    var email = await _userManager.GetEmailAsync(applicationUser);
-    var roles = await _userManager.GetRolesAsync(applicationUser);
+        var applicationUser = await _userManager.FindByIdAsync(existingToken.UserId.ToString());
 
-    await using var transaction = await _context.Database.BeginTransactionAsync(ct);
+        if (applicationUser is null)
+        {
+            return RefreshTokenErrors.TokenRequired;
+        }
 
-    existingToken.IsRevoked = true;
-    existingToken.RevokeAtUtc = DateTimeOffset.UtcNow;
+        var phone = await _userManager.GetPhoneNumberAsync(applicationUser);
+        var roles = await _userManager.GetRolesAsync(applicationUser);
 
-    var newRawRefreshToken = GenerateRefreshToken();
-    var jwtSettings = _configuration.GetSection("JwtSetting");
-    var expiresIn = int.Parse(jwtSettings["TokenExpirationInMinutes"]!);
-    var expires = DateTime.UtcNow.AddMinutes(expiresIn);
+        await using var transaction = await _context.Database.BeginTransactionAsync(ct);
 
-    var newRefreshTokenResult = RefreshToken.Create(
-        Guid.NewGuid(),
-        HashToken(newRawRefreshToken),
-        existingToken.UserId,
-        DateTime.UtcNow.AddDays(1));
+        existingToken.IsRevoked = true;
+        existingToken.RevokeAtUtc = DateTimeOffset.UtcNow;
 
-    if (newRefreshTokenResult.IsError)
-    {
-        return newRefreshTokenResult.Errors;
-    }
+        var newRawRefreshToken = GenerateRefreshToken();
+        var jwtSettings = _configuration.GetSection("JwtSetting");
+        var expiresIn = int.Parse(jwtSettings["TokenExpirationInMinutes"]!);
+        var expires = DateTime.UtcNow.AddMinutes(expiresIn);
 
-    _context.RefreshTokens.Add(newRefreshTokenResult.Value);
+        var newRefreshTokenResult = RefreshToken.Create(
+            Guid.NewGuid(),
+            HashToken(newRawRefreshToken),
+            existingToken.UserId,
+           Convert.ToDateTime( jwtSettings["RefreshTokenExpiryDays"]!));
 
-    await _context.SaveChangesAsync(ct);
-    await transaction.CommitAsync(ct);
+        if (newRefreshTokenResult.IsError)
+        {
+            return newRefreshTokenResult.Errors;
+        }
 
-    var claim = new List<Claim>
-    {
-        new(JwtRegisteredClaimNames.Sub, existingToken.UserId.ToString()),
-        new(JwtRegisteredClaimNames.Email, email!)
-    };
+        _context.RefreshTokens.Add(newRefreshTokenResult.Value);
 
-    foreach (var role in roles)
-    {
-        claim.Add(new Claim(ClaimTypes.Role, role));
-    }
+        await _context.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
 
-    var descriptor = new SecurityTokenDescriptor
-    {
-        Subject = new ClaimsIdentity(claim),
-        Expires = expires,
-        Issuer = jwtSettings["Issuer"]!,
-        Audience = jwtSettings["Audience"]!,
-        SigningCredentials = new SigningCredentials(
-            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!)),
-            SecurityAlgorithms.HmacSha256Signature)
-    };
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, existingToken.UserId.ToString()),
+            new(JwtRegisteredClaimNames.PhoneNumber, phone!)
+        };
 
-    var tokenHandler = new JwtSecurityTokenHandler();
-    var securityToken = tokenHandler.CreateToken(descriptor);
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
 
-    return new TokenResponse
-    {
-        AccessToken = tokenHandler.WriteToken(securityToken),
-        RefreshToken = newRawRefreshToken,
-        ExpiresOnUtc = expires
-    };
-}
+        var descriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = expires,
+            Issuer = jwtSettings["Issuer"]!,
+            Audience = jwtSettings["Audience"]!,
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!)),
+                SecurityAlgorithms.HmacSha256Signature)
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var securityToken = tokenHandler.CreateToken(descriptor);
+
+        return new TokenResponse
+        {
+            AccessToken = tokenHandler.WriteToken(securityToken),
+            RefreshToken = newRawRefreshToken,
+            ExpiresOnUtc = expires
+        };
+    } 
     private static string GenerateRefreshToken()
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
     }
     private static string HashToken(string rawToken)
+
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(rawToken));
         return Convert.ToHexString(bytes);
     }
+    
+
+
 }

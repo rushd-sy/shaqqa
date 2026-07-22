@@ -1,4 +1,4 @@
 
 namespace RealEstate.Application.Identity.DTOs;
 
-public sealed record AppUserDto(Guid UserId, string Email, IList<string> Roles);
+public sealed record AppUserDto(Guid UserId, string Phone, IList<string> Roles);
