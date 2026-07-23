@@ -214,7 +214,7 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
             throw new Exception("Invalid refresh token.");
 
         token.IsRevoked = true;
-        token.RevokeAtUtc = DateTime.UtcNow;
+        token.RevokeAtUtc = DateTimeOffset.UtcNow;
         await _context.SaveChangesAsync();
     }
     private static string GenerateRefreshToken()
