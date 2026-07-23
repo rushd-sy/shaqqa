@@ -30,6 +30,13 @@ public class IdentityService : IIdentityService
 
     public async Task<Result<bool>> SendOtpAsync(SendOtpDto dto, CancellationToken cancellationToken = default)
     {
+        var userExists = await _userManager.Users
+        .AnyAsync(u => u.PhoneNumber == dto.PhoneNumber, cancellationToken);
+
+        if (userExists)
+        {
+            return Error.Conflict("User.AlreadyExists", "Phone number is already registered.");
+        }
 
         var activeVerifications = await _context.PhoneVerifications
     .Where(pv => pv.PhoneNumber == dto.PhoneNumber && !pv.IsUsed)
@@ -57,6 +64,14 @@ public class IdentityService : IIdentityService
 
     public async Task<Result<TokenResponse>> RegisterWithOtpAsync(RegisterWithOtpDto dto, CancellationToken cancellationToken = default)
     {
+        var userExists = await _userManager.Users
+        .AnyAsync(u => u.PhoneNumber == dto.PhoneNumber, cancellationToken);
+
+        if (userExists)
+        {
+            return Error.Conflict("User.AlreadyExists", "Phone number is already registered.");
+        }
+
         var verification = await _context.PhoneVerifications
             .Where(pv => pv.PhoneNumber == dto.PhoneNumber
                       && pv.VerificationCode == dto.VerificationCode
