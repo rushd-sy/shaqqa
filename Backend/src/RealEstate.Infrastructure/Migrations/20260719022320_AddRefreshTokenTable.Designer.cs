@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RealEstate.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using RealEstate.Infrastructure.Persistence;
 namespace RealEstate.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260719022320_AddRefreshTokenTable")]
+    partial class AddRefreshTokenTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -152,7 +155,7 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("RevokeAtUtc")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("TokenHash")
+                    b.Property<string>("Token")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -162,7 +165,7 @@ namespace RealEstate.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TokenHash")
+                    b.HasIndex("Token")
                         .IsUnique();
 
                     b.HasIndex("UserId");
