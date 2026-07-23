@@ -204,6 +204,19 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
             ExpiresOnUtc = expires
         };
     } 
+    public async Task RevokeTokenAsync(string rawRefreshToken)
+    {
+        var  refreshToken = HashToken(rawRefreshToken);
+        var token = await _context.RefreshTokens.
+            FirstOrDefaultAsync(x => x.TokenHash == refreshToken);
+
+        if (token is null || !token.IsActive)
+            throw new Exception("Invalid refresh token.");
+
+        token.IsRevoked = true;
+        token.RevokeAtUtc = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+    }
     private static string GenerateRefreshToken()
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
@@ -215,6 +228,6 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
         return Convert.ToHexString(bytes);
     }
     
-
+  
 
 }
