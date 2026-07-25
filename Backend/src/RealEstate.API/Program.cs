@@ -10,7 +10,12 @@ builder.Services.AddDatabaseService(builder.Configuration);
 builder.Services.AddIdentityService();
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
+<<<<<<< HEAD
 builder.Services.AddInfrastructureServices(builder.Configuration);
+=======
+builder.Services.AddInfrastructure(builder.Configuration);
+
+>>>>>>> origin/main
 var app = builder.Build();
 
 
