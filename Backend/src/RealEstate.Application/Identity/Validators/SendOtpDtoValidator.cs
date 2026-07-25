@@ -9,6 +9,6 @@ public class SendOtpDtoValidator : AbstractValidator<SendOtpDto>
     {
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage("Phone number is required.")
-            .Matches(@"^[0-9]{8,15}$").WithMessage("Phone number must contain numbers only and be between 8 and 15 digits.");
+            .Matches(@"^[0-9]{10,15}$").WithMessage("Phone number must contain numbers only and be between 10 and 15 digits.");
     }
 }
