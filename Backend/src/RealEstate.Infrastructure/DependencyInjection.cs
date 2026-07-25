@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +9,6 @@ using RealEstate.Infrastructure.Persistence;
 using RealEstate.Infrastructure.Persistence.Repositories;
 using System.Reflection;
 using RealEstate.Application.Identity.Validators;
-=======
 
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,13 +17,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using RealEstate.Application.Common.Interfaces;
 using RealEstate.Infrastructure.Identity;
->>>>>>> origin/main
 
 namespace RealEstate.Infrastructure;
 
 public static class DependencyInjection
 {
-<<<<<<< HEAD
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
@@ -38,7 +34,6 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<RegisterWithOtpDtoValidator>();
 
         return services;
-=======
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddAuthentication(options =>
@@ -64,7 +59,5 @@ public static class DependencyInjection
         services.AddScoped<ITokenProvider,TokenProvider>();
 
         return services;
-        
->>>>>>> origin/main
     }
 }
