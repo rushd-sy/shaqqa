@@ -24,6 +24,7 @@ namespace RealEstate.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     IconUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastModifiedUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -97,6 +98,33 @@ namespace RealEstate.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    Channel = table.Column<int>(type: "int", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false),
+                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastModifiedUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    LastModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notifications_UserProfiles_UserId",
+                        column: x => x.UserId,
+                        principalTable: "UserProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Reasons",
                 columns: table => new
                 {
@@ -120,7 +148,7 @@ namespace RealEstate.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DocumentTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DocumentableId = table.Column<int>(type: "int", nullable: false),
-                    DocumentableType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    DocumentableType = table.Column<int>(type: "int", nullable: false),
                     Filename = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Url = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -231,38 +259,6 @@ namespace RealEstate.Infrastructure.Migrations
                         name: "FK_PropertyAmenities_Properties_PropertyId",
                         column: x => x.PropertyId,
                         principalTable: "Properties",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Enquiries",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EnquiryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AdvertisementId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastModifiedUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Enquiries", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Enquiries_Advertisements_AdvertisementId",
-                        column: x => x.AdvertisementId,
-                        principalTable: "Advertisements",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Enquiries_UserProfiles_UserId",
-                        column: x => x.UserId,
-                        principalTable: "UserProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -396,40 +392,6 @@ namespace RealEstate.Infrastructure.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Notifications",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EnquiryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    Channel = table.Column<int>(type: "int", nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsRead = table.Column<bool>(type: "bit", nullable: false),
-                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedAtUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastModifiedUtc = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notifications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Notifications_Enquiries_EnquiryId",
-                        column: x => x.EnquiryId,
-                        principalTable: "Enquiries",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Notifications_UserProfiles_UserId",
-                        column: x => x.UserId,
-                        principalTable: "UserProfiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_UserProfiles_CompanyId",
                 table: "UserProfiles",
@@ -472,16 +434,6 @@ namespace RealEstate.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Enquiries_AdvertisementId",
-                table: "Enquiries",
-                column: "AdvertisementId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Enquiries_UserId",
-                table: "Enquiries",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Favorites_AdvertisementId",
                 table: "Favorites",
                 column: "AdvertisementId");
@@ -508,11 +460,6 @@ namespace RealEstate.Infrastructure.Migrations
                 column: "PlaceId",
                 unique: true,
                 filter: "[PlaceId] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_EnquiryId",
-                table: "Notifications",
-                column: "EnquiryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Notifications_UserId",
@@ -608,9 +555,6 @@ namespace RealEstate.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "DocumentTypes");
-
-            migrationBuilder.DropTable(
-                name: "Enquiries");
 
             migrationBuilder.DropTable(
                 name: "Amenities");

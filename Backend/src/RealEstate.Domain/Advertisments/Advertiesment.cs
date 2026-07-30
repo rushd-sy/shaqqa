@@ -1,5 +1,4 @@
 using RealEstate.Domain.Common;
-using RealEstate.Domain.Enquiries;
 using RealEstate.Domain.Favorites;
 using RealEstate.Domain.Histories;
 using RealEstate.Domain.Properties;
@@ -26,5 +25,4 @@ public class Advertisement : AuditableEntity
     public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
     public ICollection<History> HistoryEntries { get; set; } = new List<History>();
     public ICollection<Report> Reports { get; set; } = new List<Report>();
-    public ICollection<Enquiry> Enquiries { get; set; } = new List<Enquiry>();
 }

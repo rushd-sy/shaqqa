@@ -12,7 +12,7 @@ using RealEstate.Infrastructure.Persistence;
 namespace RealEstate.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260720193759_UpdateDomainModel")]
+    [Migration("20260730171604_UpdateDomainModel")]
     partial class UpdateDomainModel
     {
         /// <inheritdoc />
@@ -189,6 +189,10 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("IconUrl")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -310,10 +314,8 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Property<int>("DocumentableId")
                         .HasColumnType("int");
 
-                    b.Property<string>("DocumentableType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<int>("DocumentableType")
+                        .HasColumnType("int");
 
                     b.Property<string>("Filename")
                         .IsRequired()
@@ -338,49 +340,6 @@ namespace RealEstate.Infrastructure.Migrations
                     b.HasIndex("DocumentableType", "DocumentableId");
 
                     b.ToTable("Documents", (string)null);
-                });
-
-            modelBuilder.Entity("RealEstate.Domain.Enquiries.Enquiry", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AdvertisementId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("EnquiryId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AdvertisementId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Enquiries", (string)null);
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Favorites.Favorite", b =>
@@ -695,9 +654,6 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("EnquiryId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<bool>("IsRead")
                         .HasColumnType("bit");
 
@@ -721,8 +677,6 @@ namespace RealEstate.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EnquiryId");
 
                     b.HasIndex("UserId");
 
@@ -996,25 +950,6 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Navigation("DocumentType");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Enquiries.Enquiry", b =>
-                {
-                    b.HasOne("RealEstate.Domain.Advertisements.Advertisement", "Advertisement")
-                        .WithMany("Enquiries")
-                        .HasForeignKey("AdvertisementId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RealEstate.Domain.Users.User", "User")
-                        .WithMany("Enquiries")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Advertisement");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("RealEstate.Domain.Favorites.Favorite", b =>
                 {
                     b.HasOne("RealEstate.Domain.Advertisements.Advertisement", "Advertisement")
@@ -1112,18 +1047,11 @@ namespace RealEstate.Infrastructure.Migrations
 
             modelBuilder.Entity("RealEstate.Domain.Users.Notifications.Notification", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Enquiries.Enquiry", "Enquiry")
-                        .WithMany("Notifications")
-                        .HasForeignKey("EnquiryId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("RealEstate.Domain.Users.User", "User")
                         .WithMany("Notifications")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Enquiry");
 
                     b.Navigation("User");
                 });
@@ -1164,8 +1092,6 @@ namespace RealEstate.Infrastructure.Migrations
 
             modelBuilder.Entity("RealEstate.Domain.Advertisements.Advertisement", b =>
                 {
-                    b.Navigation("Enquiries");
-
                     b.Navigation("Favorites");
 
                     b.Navigation("HistoryEntries");
@@ -1190,11 +1116,6 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Navigation("Documents");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Enquiries.Enquiry", b =>
-                {
-                    b.Navigation("Notifications");
-                });
-
             modelBuilder.Entity("RealEstate.Domain.Locations.Location", b =>
                 {
                     b.Navigation("Properties");
@@ -1215,8 +1136,6 @@ namespace RealEstate.Infrastructure.Migrations
             modelBuilder.Entity("RealEstate.Domain.Users.User", b =>
                 {
                     b.Navigation("Advertisements");
-
-                    b.Navigation("Enquiries");
 
                     b.Navigation("Favorites");
 

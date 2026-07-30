@@ -5,7 +5,6 @@ using RealEstate.Domain.Amenities;
 using RealEstate.Domain.Companies;
 using RealEstate.Domain.Documents;
 using RealEstate.Domain.DocumentTypes;
-using RealEstate.Domain.Enquiries;
 using RealEstate.Domain.Favorites;
 using RealEstate.Domain.Histories;
 using RealEstate.Domain.Locations;
@@ -39,8 +38,6 @@ namespace RealEstate.Infrastructure.Persistence
         public DbSet<Document> Documents => Set<Document>();
         public DbSet<History> Histories => Set<History>();
         public DbSet<Reason> Reasons => Set<Reason>();
-        public DbSet<Enquiry> Enquiries => Set<Enquiry>();
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

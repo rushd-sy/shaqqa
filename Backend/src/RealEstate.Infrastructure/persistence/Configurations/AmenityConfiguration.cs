@@ -13,5 +13,6 @@ public class AmenityConfiguration : IEntityTypeConfiguration<Amenity>
 
         builder.Property(a => a.Name).IsRequired().HasMaxLength(100);
         builder.Property(a => a.IconUrl).HasMaxLength(500);
+        builder.Property(a => a.Description).HasMaxLength(500);
     }
 }

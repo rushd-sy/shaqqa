@@ -11,7 +11,7 @@ namespace RealEstate.Infrastructure.Persistence.Configurations
             builder.ToTable("Documents");
             builder.HasKey(d => d.Id);
 
-            builder.Property(d => d.DocumentableType).IsRequired().HasMaxLength(100);
+            builder.Property(d => d.DocumentableType).IsRequired();
             builder.HasIndex(d => new { d.DocumentableType, d.DocumentableId });
 
             builder.Property(d => d.Filename).IsRequired().HasMaxLength(255);
