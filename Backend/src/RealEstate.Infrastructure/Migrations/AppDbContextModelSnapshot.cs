@@ -409,6 +409,51 @@ namespace RealEstate.Infrastructure.Migrations
                     b.ToTable("Histories", (string)null);
                 });
 
+            modelBuilder.Entity("RealEstate.Domain.Identity.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("ExpiresOnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("RevokeAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("RealEstate.Domain.Locations.Location", b =>
                 {
                     b.Property<Guid>("Id")
@@ -985,6 +1030,17 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("RealEstate.Domain.Identity.RefreshToken", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Users.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("RealEstate.Domain.Properties.Property", b =>
                 {
                     b.HasOne("RealEstate.Domain.Locations.Location", "Location")
@@ -1141,6 +1197,8 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("ProcessedVerificationRequests");
+
+                    b.Navigation("RefreshTokens");
 
                     b.Navigation("Reports");
                 });

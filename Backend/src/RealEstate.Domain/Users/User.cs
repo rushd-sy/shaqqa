@@ -3,6 +3,7 @@ using RealEstate.Domain.Common;
 using RealEstate.Domain.Companies;
 using RealEstate.Domain.Favorites;
 using RealEstate.Domain.Histories;
+using RealEstate.Domain.Identity;
 using RealEstate.Domain.Reports;
 using RealEstate.Domain.Users.Notifications;
 using RealEstate.Domain.VerificationRequests;
@@ -24,4 +25,5 @@ public class User : AuditableEntity
     public ICollection<History> HistoryEntries { get; set; } = new List<History>();
     public ICollection<Report> Reports { get; set; } = new List<Report>();
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }

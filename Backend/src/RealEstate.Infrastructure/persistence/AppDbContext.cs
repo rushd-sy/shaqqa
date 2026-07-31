@@ -7,6 +7,7 @@ using RealEstate.Domain.Documents;
 using RealEstate.Domain.DocumentTypes;
 using RealEstate.Domain.Favorites;
 using RealEstate.Domain.Histories;
+using RealEstate.Domain.Identity;
 using RealEstate.Domain.Locations;
 using RealEstate.Domain.Properties;
 using RealEstate.Domain.PropertyAmenities;
@@ -38,6 +39,8 @@ namespace RealEstate.Infrastructure.Persistence
         public DbSet<Document> Documents => Set<Document>();
         public DbSet<History> Histories => Set<History>();
         public DbSet<Reason> Reasons => Set<Reason>();
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
