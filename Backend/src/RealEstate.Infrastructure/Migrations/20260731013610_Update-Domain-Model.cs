@@ -147,7 +147,7 @@ namespace RealEstate.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DocumentTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DocumentableId = table.Column<int>(type: "int", nullable: false),
+                    DocumentableId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DocumentableType = table.Column<int>(type: "int", nullable: false),
                     Filename = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Url = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
@@ -365,7 +365,7 @@ namespace RealEstate.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AdvertismentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AdvertisementId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ReviewedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -379,8 +379,8 @@ namespace RealEstate.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_VerificationRequests", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_VerificationRequests_Advertisements_AdvertismentId",
-                        column: x => x.AdvertismentId,
+                        name: "FK_VerificationRequests_Advertisements_AdvertisementId",
+                        column: x => x.AdvertisementId,
                         principalTable: "Advertisements",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -504,9 +504,9 @@ namespace RealEstate.Infrastructure.Migrations
                 column: "ReportedByUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_VerificationRequests_AdvertismentId",
+                name: "IX_VerificationRequests_AdvertisementId",
                 table: "VerificationRequests",
-                column: "AdvertismentId");
+                column: "AdvertisementId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_VerificationRequests_ReviewedByUserId",

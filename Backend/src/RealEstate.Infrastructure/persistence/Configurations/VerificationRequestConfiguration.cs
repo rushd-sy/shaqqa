@@ -15,7 +15,7 @@ public class VerificationRequestConfiguration : IEntityTypeConfiguration<Verific
 
         builder.HasOne(v => v.Advertisement)
             .WithMany(a => a.VerificationRequests)
-            .HasForeignKey(v => v.AdvertismentId)
+            .HasForeignKey(v => v.AdvertisementId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(v => v.ReviewedByUser)

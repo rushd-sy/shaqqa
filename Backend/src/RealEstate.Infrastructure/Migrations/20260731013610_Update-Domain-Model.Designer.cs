@@ -12,7 +12,7 @@ using RealEstate.Infrastructure.Persistence;
 namespace RealEstate.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260731012651_Update-Domain-Model")]
+    [Migration("20260731013610_Update-Domain-Model")]
     partial class UpdateDomainModel
     {
         /// <inheritdoc />
@@ -311,8 +311,8 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Property<Guid>("DocumentTypeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("DocumentableId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("DocumentableId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("DocumentableType")
                         .HasColumnType("int");
@@ -774,7 +774,7 @@ namespace RealEstate.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AdvertismentId")
+                    b.Property<Guid>("AdvertisementId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
@@ -803,7 +803,7 @@ namespace RealEstate.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AdvertismentId");
+                    b.HasIndex("AdvertisementId");
 
                     b.HasIndex("ReviewedByUserId");
 
@@ -1132,7 +1132,7 @@ namespace RealEstate.Infrastructure.Migrations
                 {
                     b.HasOne("RealEstate.Domain.Advertisements.Advertisement", "Advertisement")
                         .WithMany("VerificationRequests")
-                        .HasForeignKey("AdvertismentId")
+                        .HasForeignKey("AdvertisementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

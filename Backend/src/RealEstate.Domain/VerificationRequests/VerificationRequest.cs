@@ -8,7 +8,7 @@ namespace RealEstate.Domain.VerificationRequests
     public class VerificationRequest : AuditableEntity
     {
         public VerificationRequest(Guid id) : base(id) { }
-        public Guid AdvertismentId { get; set; }
+        public Guid AdvertisementId { get; set; }
         public Advertisement Advertisement { get; set; } = null!;
 
         public Guid? ReviewedByUserId { get; set; }
