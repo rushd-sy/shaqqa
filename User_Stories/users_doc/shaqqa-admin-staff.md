@@ -30,7 +30,7 @@
 
 # 3. API Endpoints (Login & Roles)
 
-## 4. Review Broker Request (Admin/Staff)
+## 1. Review Broker Request (Admin/Staff)
 *   **Endpoint:** `PUT /api/admin/broker-requests/{id_request}`
 *   **Description:** **Shaqqa Admin OR Shaqqa Staff** reviews and updates request status.
 *   **Path Parameters:**
@@ -40,7 +40,7 @@
     ```json
     {
       "status": "APPROVED", // or "REJECTED"
-      "review_notes": "Documents verified."
+      "review_notes": "Application details verified."
     }
     ```
 *   **Response (200 OK):**
@@ -62,7 +62,7 @@
     *    `403 Forbidden`: User is not a Shaqqa Admin or Staff.
     *    `404 Not Found`: No broker request found with the provided `id_request`.
 
-## 7. Check Phone Number Registration (Shaqqa Admin)
+## 2. Check Phone Number Registration (Shaqqa Admin)
 *   **Endpoint:** `POST /api/admin/staff/check`
 *   **Description:** Used by a Shaqqa Admin to check if a phone number already exists in the system before registering them as Shaqqa Staff. This determines whether the frontend needs to collect the user's name details.
 *   **Headers:** `Authorization: Bearer <Shaqqa_Admin_Token>`
@@ -93,7 +93,7 @@
     *   `401 Unauthorized`: Invalid or expired token.
     *   `403 Forbidden`: Only Shaqqa Admins are authorized to perform this check.
 
-## 8. Shaqqa Admin Adds Staff
+## 3. Shaqqa Admin Adds Staff
 *   **Endpoint:** `POST /api/admin/staff`
 *   **Description:** Finalizes registering and setting up a Shaqqa Staff member.
 *   **Headers:** `Authorization: Bearer <Shaqqa_Admin_Token>`
