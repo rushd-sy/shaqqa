@@ -18,7 +18,8 @@
     * The system must filter results by "Estate Type" (`APARTMENT`, `LAND`, `SHOP`, `VILLA`, `OFFICE`) and "Room Count".
     * Users must be able to switch between `RENT` and `SALE` (`contractType`).
     * There should be an option to clear all filters.
-    * The free-text search (`q`) matches against `address`, `city`, and `country` only (no description/amenity search).
+    * The free-text search (`q`) matches against `address`, `city`, `country`, and the advertisement `title`
+      (no description/amenity search).
     * Results include only available advertisements (`is_available = TRUE`). Advertisements of deactivated users
       or companies are excluded from results.
     * When an authenticated user performs a search, the system records the query to their search history as a side effect (see `history.md`).
@@ -43,7 +44,8 @@
 * **Headers:** `Authorization: Bearer <User_Token>` (optional; required only to record search history)
 * **Query Parameters:**
     * `q` (string, optional): Free-text keyword search (e.g., "house in newyork"). Matches against
-      `address`, `city`, and `country`. Recorded in the user's search history when authenticated.
+      `address`, `city`, `country`, and the advertisement `title`. Recorded in the user's recent text searches
+      when authenticated.
     * `minPrice` (decimal, optional): Minimum price.
     * `maxPrice` (decimal, optional): Maximum price.
     * `city` (string, optional): Filter by city or neighborhood.
@@ -91,8 +93,11 @@ Refer to `PropertyDetails.md` for the full `User` and `Property` table definitio
 | `minRooms` | `Property.number_of_rooms` |
 | `city` | `Property.city` |
 | `estateType` | `Property.property_type` |
-| `q` (free-text) | `Property.address`, `Property.city`, `Property.country` |
+| `q` (free-text) | `Property.address`, `Property.city`, `Property.country`, `Advertisement.title` |
 | `contractType` | `Advertisement.contract_type` (`RENT`, `SALE`) |
 | `sortBy=date` | `Advertisement.publish_date` |
 
-Additionally, this feature relies on the `SearchQuery` table defined in `history.md` for search history recording.
+Additionally, this feature relies on the `SearchQuery` and `SavedSearch` tables defined in `history.md`:
+the search endpoint records the `q` text to `SearchQuery` and the filter parameters to `SavedSearch`
+(both automatically, independently of each other). Saved filter combinations re-run against this endpoint
+via "View Results".

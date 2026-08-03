@@ -1,31 +1,57 @@
 # 1. User Stories
 
 ## User
-- As a user, I want my searches to be recorded automatically so that I can quickly check for updates later without re-typing them.
+- As a user, I want my text searches to be recorded automatically so that I can quickly re-pick a keyword from the list under the search field.
+- As a user, I want my filter combinations to be recorded automatically so that I can re-run a specific search later from "Saved Searches".
+- As a user, I want to remove any single item from my recent text searches or my saved searches.
 - As a user, I want to save my recent visits so that I can find anything I visited and then wanted to return to, or that I lost.
 
 # 2. Acceptance Criteria & Edge Cases
 
-## Feature: Recent Visits and Search History
+## Feature: Recent Visits, Recent Searches, and Saved Searches
 * **Acceptance Criteria:**
-  * Search queries are recorded automatically as a side effect of the search endpoint — no separate
-    client request is required.
+  * Text search queries are recorded automatically as a side effect of the search endpoint — no separate
+    client request is required. They appear as a list under the search field.
+  * Filter combinations are also recorded automatically, and displayed as cards
+    in the "Saved Searches" section, each showing the applied criteria.
+  * Text records and filter records are **independent**: a text record never stores filters, and a saved
+    filter never stores the `q` text.
+  * The user can remove any single record from both text search list and filter cards list.
   * The system should save recent visits for each user.
 * **Business Rules:**
-  * Each user is limited to the last 10 visits and 10 searches (`FIFO` - First In, First Out).
-  * Adding an 11th record prunes the oldest one automatically.
-  * A repeat visit to a property, or a repeated identical search query, updates the existing
+  * Each user is limited to the last 10 visits, 10 text searches, and 10 saved filters.
+  * Visits, text searches, and saved filters: keep only the **last 10** (`LIFO` - most recently recorded
+    first); adding an 11th record evicts the oldest.
+  * A repeat visit to a property, or a repeated identical text search, updates the existing
     record's `viewed_at` / `searched_at` timestamp instead of inserting a duplicate entry.
+  * Recording a filter combination identical to an existing one updates the `saved_at` timestamp instead of
+    creating a duplicate card.
+  * Before storing, the `filters_json` payload must be validated against a strict schema: **only the allowed
+    keys** (the search query parameters in `searching-filtering.md`) where the `q` parameter is not allowed, 
+    correct types, valid enum values, and valid ranges (`minPrice` <= `maxPrice`, `minArea` <= `maxArea`). Records 
+    failing validation are rejected
+    with `400` and never written, keeping the column clean.
+  * When returning saved searches, `filters_json` is parsed and re-serialized by the server so the frontend
+    always receives a valid `filters` object — never raw, corrupted, or partial JSON.
 * **Edge Cases:**
+  * A `SavedSearch` row already exists in the database with corrupted or out-of-schema JSON (e.g., legacy
+    data, manual DB edits) → the endpoint must not crash: the row is skipped (or returned with a sanitized,
+    empty `filters: {}` and a flag) so the frontend never renders a broken card.
   * User has never visited/searched anything → the endpoint returns an empty list (200), not an error.
   * Two rapid/concurrent visits for the same property → must still result in a single record, no duplicates.
-  * History is exactly at the limit (10) → nothing is pruned (boundary of the FIFO rule).
+  * History is exactly at the limit (10) → nothing is pruned (boundary of the limit rule).
   * A property in the user's "Recent Visits" list was deleted from the platform → filter it out of results
     to avoid broken links.
-  * Empty or blank search query → no entry is recorded; blank searches are never added to history.
+  * Empty or blank text query → nothing is recorded to the text search history.
+  * A search with no filter parameters → nothing is recorded to "Saved Searches".
+  * Invalid filter values in a search request (e.g., malformed enum, `minPrice` > `maxPrice`) → `400 Bad Request`,
+    nothing is recorded.
+  * A saved filter whose criteria no longer match any available property → "View Results" returns an empty
+    list (`200 data: []`); the saved card remains intact.
+  * Deleting a record that does not exist or does not belong to the user → `404 Not Found`.
   * Property does not exist when saving a visit → `404 Not Found`, no record is saved.
   * Unauthenticated request on the visits / history endpoints → `401 Unauthorized`.
-  * Unauthenticated search still returns results, but the query is not recorded to history.
+  * Unauthenticated search still returns results, but nothing is recorded.
   * The `userId` is always derived from the token; any `userId` sent in the body is ignored → a user can never
     view or modify another user's history.
 
@@ -82,17 +108,17 @@
 
 ## 3. Search (Records History Automatically)
 * **Endpoint:** GET /api/v1/properties
-* **Description:** Performs the search and returns results. The server automatically records the search
-  query to the authenticated user's history as a side effect — no separate client call is needed.
+* **Description:** Performs the search and returns results. As side effects, the server automatically records
+  (independently of each other):
+  * the text query → `SearchQuery` (recent text searches) — only if a `q` was sent,
+  * the filter combination → `SavedSearch` (saved searches) — only if filter parameters were sent.
 * **Headers:** `Authorization: Bearer <User_Token>`
 * **Note:** Refer to `searching-filtering.md` for the full query parameters and response format. If the user
   is not authenticated, the search still works but nothing is recorded.
-* **Error Responses:**
-  * `401 Unauthorized`: Missing or invalid token.
 
-## 4. Get Search History
-* **Endpoint:** GET /api/user/search-history
-* **Description:** select latest 10 search queries
+## 4. Get Recent Text Searches
+* **Endpoint:** GET /api/user/recent-searches
+* **Description:** select latest 10 text search queries (displayed as a list under the search field)
 * **Headers:** `Authorization: Bearer <User_Token>`
 * **Response (200 OK Status):**
 ```json
@@ -100,12 +126,12 @@
   "data": [
     {
       "searchQueryId": 231,
-      "query": "house in newyork",
+      "query": "al-furqan",
       "searchedAt": "2026-08-03T10:30:00Z"
     },
     {
       "searchQueryId": 218,
-      "query": "villa for rent in damascus",
+      "query": "shahbaa",
       "searchedAt": "2026-08-01T15:45:12Z"
     }
   ]
@@ -113,6 +139,56 @@
 ```
 * **Error Responses:**
   * `401 Unauthorized`: Missing or invalid token. Empty history simply returns `200` with `data: []`.
+
+## 5. Delete Recent Text Search
+* **Endpoint:** DELETE /api/user/recent-searches/{searchQueryId}
+* **Description:** removes a single entry from the user's recent text searches
+* **Path Parameters:**
+  * `searchQueryId` (integer, required): The unique ID of the text search entry.
+* **Headers:** `Authorization: Bearer <User_Token>`
+* **Response (204 No Content):**
+* **Error Responses:**
+  * `401 Unauthorized`: Missing or invalid token.
+  * `404 Not Found`: Entry does not exist or does not belong to the user.
+
+## 6. Get Saved Searches
+* **Endpoint:** GET /api/user/saved-searches
+* **Description:** select the user's recorded filter combinations (displayed as cards with their criteria)
+* **Headers:** `Authorization: Bearer <User_Token>`
+* **Response (200 OK Status):**
+```json
+{
+  "data": [
+    {
+      "savedSearchId": 96,
+      "savedAt": "2026-08-03T11:00:00Z",
+      "filters": {
+        "minPrice": 10000,
+        "maxPrice": 100000,
+        "city": "Aleppo New",
+        "minRooms": 3,
+        "minArea": 80,
+        "maxArea": 200,
+        "estateType": "APARTMENT",
+        "contractType": "SALE"
+      }
+    }
+  ]
+}
+```
+* **Error Responses:**
+  * `401 Unauthorized`: Missing or invalid token. Empty list simply returns `200` with `data: []`.
+
+## 7. Delete Saved Search
+* **Endpoint:** DELETE /api/user/saved-searches/{savedSearchId}
+* **Description:** removes a single saved filter card from the user's "Saved Searches"
+* **Path Parameters:**
+  * `savedSearchId` (integer, required): The unique ID of the saved filter.
+* **Headers:** `Authorization: Bearer <User_Token>`
+* **Response (204 No Content):**
+* **Error Responses:**
+  * `401 Unauthorized`: Missing or invalid token.
+  * `404 Not Found`: Saved search does not exist or does not belong to the user.
 
 # 4. Database Schema (Entities & Attributes)
 
@@ -125,5 +201,13 @@
 ## 2. Table: `SearchQuery`
 * **`search_query_id`** (PK): Primary key.
 * **`user_id`** (FK): Identifier for the user.
-* **`query`** (NVARCHAR(255)): The search query text entered by the user.
+* **`query`** (NVARCHAR(255)): The raw text query entered by the user. Never stores filters.
 * **`searched_at`** (DATETIME): Timestamp when search was executed.
+
+## 3. Table: `SavedSearch`
+* **`saved_search_id`** (PK): Primary key.
+* **`user_id`** (FK): Identifier for the user.
+* **`filters_json`** (NVARCHAR(MAX)): JSON payload containing the filter combination. Keys match the
+  search query parameters in `searching-filtering.md`. Never contains the `q` text. Must always be written
+  through schema validation (see Business Rules) to keep the column clean.
+* **`saved_at`** (DATETIME): Timestamp when the filter combination was recorded.

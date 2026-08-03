@@ -188,6 +188,7 @@
 * **`id_user`** (FK -> `User.id_user`): Unique identifier of the user who owns/created the advertisement.
 * **`id_property`** (FK -> `Property.id_property`): Unique identifier of the associated property.
 * **`publish_date`** (DATETIME/TIMESTAMP): The date when the advertisement was published.
+* **`title`** (VARCHAR): The advertisement's title (e.g., "Apartments for Sale in Aleppo New"), used by free-text search.
 * **`contract_type`** (ENUM): `RENT`, `SALE`. Whether the property is offered for rent or sale in this advertisement.
 * **`contact_info`** (VARCHAR): Contact information listed for the advertisement.
 * **`is_available`** (BOOLEAN): Status indicating whether the advertisement is active and visible (`TRUE` or `FALSE`).
