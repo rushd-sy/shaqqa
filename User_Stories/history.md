@@ -1,36 +1,46 @@
 # 1. User Stories
 
 ## User
-- As a user, I want my text searches to be recorded automatically so that I can quickly re-pick a keyword from the list under the search field.
+- As a user, I want my keywords to be recorded automatically so that I can quickly re-pick one from the list under the search field.
 - As a user, I want my filter combinations to be recorded automatically so that I can re-run a specific search later from "Saved Searches".
-- As a user, I want to remove any single item from my recent text searches or my saved searches.
+- As a user, I want to remove any single item from my Recent Searches or my Saved Searches.
 - As a user, I want to save my recent visits so that I can find anything I visited and then wanted to return to, or that I lost.
 
 # 2. Acceptance Criteria & Edge Cases
 
 ## Feature: Recent Visits, Recent Searches, and Saved Searches
+
+> **Clearing up the two search records — what's the difference?**
+>
+> | | 🅰 Recent Searches | 🅱 Saved Searches |
+> |---|---|---|
+> | **Meaning of the name** | "Recent" = the last keywords you typed | "Saved" = stored filter combinations |
+> | **What it stores** | The raw text keyword only (`q`, e.g. "al-furqan") | Filter parameters only (price, city, rooms, ...) |
+> | **Never stores** | Any filter parameters | Any `q` text |
+> | **Displayed as** | A text list under the search field | A card in the "Saved Searches" section |
+> | **Purpose** | Quickly re-pick a keyword you typed before | Re-run a specific, filtered search |
+
 * **Acceptance Criteria:**
-  * Text search queries are recorded automatically as a side effect of the search endpoint — no separate
-    client request is required. They appear as a list under the search field.
-  * Filter combinations are also recorded automatically, and displayed as cards
+  * **Recent Searches:** text keywords (`q`) are recorded automatically as a side effect of the search
+    endpoint — no separate client request is required. They appear as a list under the search field.
+  * **Saved Searches:** filter combinations are also recorded automatically, and displayed as cards
     in the "Saved Searches" section, each showing the applied criteria.
-  * Text records and filter records are **independent**: a text record never stores filters, and a saved
-    filter never stores the `q` text.
-  * The user can remove any single record from both text search list and filter cards list.
+  * Recent and Saved records are **independent**: a Recent record never stores filters, and a Saved
+    record never stores the `q` text.
+  * The user can remove any single record from both the recent-search list and the saved-filter cards list.
   * The system should save recent visits for each user.
 * **Business Rules:**
-  * Each user is limited to the last 10 visits, 10 text searches, and 10 saved filters.
-  * Visits, text searches, and saved filters: keep only the **last 10** (`LIFO` - most recently recorded
+  * Each user is limited to the last 10 visits, 10 keyword searches, and 10 saved filters.
+  * Visits, keyword searches, and saved filters: keep only the **last 10** (`LIFO` - most recently recorded
     first); adding an 11th record evicts the oldest.
-  * A repeat visit to a property, or a repeated identical text search, updates the existing
+  * A repeat visit to a property, or a repeated identical keyword search, updates the existing
     record's `viewed_at` / `searched_at` timestamp instead of inserting a duplicate entry.
   * Recording a filter combination identical to an existing one updates the `saved_at` timestamp instead of
     creating a duplicate card.
   * Before storing, the `filters_json` payload must be validated against a strict schema: **only the allowed
-    keys** (the search query parameters in `searching-filtering.md`) where the `q` parameter is not allowed, 
-    correct types, valid enum values, and valid ranges (`minPrice` <= `maxPrice`, `minArea` <= `maxArea`). Records 
-    failing validation are rejected
-    with `400` and never written, keeping the column clean.
+    keys** (the search query parameters in `searching-filtering.md`, excluding `q`), correct types, valid
+    enum values, and valid ranges (`minPrice` <= `maxPrice`, `minArea` <= `maxArea`). Records failing
+    validation are rejected with `400` and never written, keeping the column clean.
   * When returning saved searches, `filters_json` is parsed and re-serialized by the server so the frontend
     always receives a valid `filters` object — never raw, corrupted, or partial JSON.
 * **Edge Cases:**
@@ -42,8 +52,8 @@
   * History is exactly at the limit (10) → nothing is pruned (boundary of the limit rule).
   * A property in the user's "Recent Visits" list was deleted from the platform → filter it out of results
     to avoid broken links.
-  * Empty or blank text query → nothing is recorded to the text search history.
-  * A search with no filter parameters → nothing is recorded to "Saved Searches".
+  * Empty or blank keyword → nothing is recorded to Recent Searches.
+  * A search with no filter parameters → nothing is recorded to Saved Searches.
   * Invalid filter values in a search request (e.g., malformed enum, `minPrice` > `maxPrice`) → `400 Bad Request`,
     nothing is recorded.
   * A saved filter whose criteria no longer match any available property → "View Results" returns an empty
@@ -110,15 +120,15 @@
 * **Endpoint:** GET /api/v1/properties
 * **Description:** Performs the search and returns results. As side effects, the server automatically records
   (independently of each other):
-  * the text query → `SearchQuery` (recent text searches) — only if a `q` was sent,
-  * the filter combination → `SavedSearch` (saved searches) — only if filter parameters were sent.
+  * the text query → `SearchQuery` (Recent Searches) — only if a `q` was sent,
+  * the filter combination → `SavedSearch` (Saved Searches) — only if filter parameters were sent.
 * **Headers:** `Authorization: Bearer <User_Token>`
 * **Note:** Refer to `searching-filtering.md` for the full query parameters and response format. If the user
   is not authenticated, the search still works but nothing is recorded.
 
-## 4. Get Recent Text Searches
+## 4. Get Recent Searches
 * **Endpoint:** GET /api/user/recent-searches
-* **Description:** select latest 10 text search queries (displayed as a list under the search field)
+* **Description:** select latest 10 keyword searches (Recent Searches — displayed as a list under the search field)
 * **Headers:** `Authorization: Bearer <User_Token>`
 * **Response (200 OK Status):**
 ```json
@@ -140,11 +150,11 @@
 * **Error Responses:**
   * `401 Unauthorized`: Missing or invalid token. Empty history simply returns `200` with `data: []`.
 
-## 5. Delete Recent Text Search
+## 5. Delete Recent Search
 * **Endpoint:** DELETE /api/user/recent-searches/{searchQueryId}
-* **Description:** removes a single entry from the user's recent text searches
+* **Description:** removes a single Recent Search entry (keyword)
 * **Path Parameters:**
-  * `searchQueryId` (integer, required): The unique ID of the text search entry.
+  * `searchQueryId` (integer, required): The unique ID of the Recent Search entry.
 * **Headers:** `Authorization: Bearer <User_Token>`
 * **Response (204 No Content):**
 * **Error Responses:**
@@ -153,7 +163,7 @@
 
 ## 6. Get Saved Searches
 * **Endpoint:** GET /api/user/saved-searches
-* **Description:** select the user's recorded filter combinations (displayed as cards with their criteria)
+* **Description:** select the user's recorded filter combinations (Saved Searches — displayed as cards with their criteria)
 * **Headers:** `Authorization: Bearer <User_Token>`
 * **Response (200 OK Status):**
 ```json
