@@ -77,6 +77,7 @@
   "property_details": {
     "description": "string",
     "price": 150000000,
+    "contract_type": "SALE",
     // all other elements from Saleh
   },
   "contact_information": "+963xxxxxxxxx",
@@ -112,7 +113,7 @@
   "property_details": {
     "description": "string",
     "price": 160000000,
-    // all other elements from Saleh
+    // all other elements from PropertyDetails.md
   },
   "contact_information": "+963xxxxxxxxx"
 }
@@ -187,6 +188,7 @@
 * **`id_user`** (FK -> `User.id_user`): Unique identifier of the user who owns/created the advertisement.
 * **`id_property`** (FK -> `Property.id_property`): Unique identifier of the associated property.
 * **`publish_date`** (DATETIME/TIMESTAMP): The date when the advertisement was published.
+* **`contract_type`** (ENUM): `RENT`, `SALE`. Whether the property is offered for rent or sale in this advertisement.
 * **`contact_info`** (VARCHAR): Contact information listed for the advertisement.
 * **`is_available`** (BOOLEAN): Status indicating whether the advertisement is active and visible (`TRUE` or `FALSE`).
 
