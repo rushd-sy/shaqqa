@@ -12,27 +12,26 @@ using RealEstate.Application.Identity;
 using RealEstate.Application.Identity.DTOs;
 using RealEstate.Domain.Common.Results;
 using RealEstate.Domain.Identity;
-using RealEstate.Domain.Users;
 using RealEstate.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Http;
 
 namespace RealEstate.Infrastructure.Identity;
 
-public class TokenProvider(IConfiguration configuration , AppDbContext context ,UserManager<User> userManager ) : ITokenProvider , IAuthServices
+public class TokenProvider(IConfiguration configuration, AppDbContext context, UserManager<ApplicationUser> userManager) : ITokenProvider , IAuthServices
 {
     private readonly IConfiguration _configuration = configuration;
     private readonly AppDbContext _context = context;
-    private readonly UserManager<User> _userManager =  userManager;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
     public async Task<Result<TokenResponse>> GenerateJwtTokenAsync(AppUserDto user, CancellationToken ct = default)
     {
         var tokenResult = await CreateAsync(user, ct);
 
-        if(tokenResult.IsError)
-       { 
-         return tokenResult.Errors;
-       }
+        if (tokenResult.IsError)
+        {
+            return tokenResult.Errors;
+        }
 
-        return  tokenResult.Value;
+        return tokenResult.Value;
     }
     public Result<ClaimsPrincipal> GetPrincipalFromExpiredToken(string token)
     {
@@ -48,7 +47,7 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
-      
+
         try
         {
             var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
@@ -66,7 +65,7 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
             return RefreshTokenErrors.TokenInvalid;
         }
     }
-    public async Task<Result<TokenResponse>> CreateAsync(AppUserDto user, CancellationToken ct = default )
+    public async Task<Result<TokenResponse>> CreateAsync(AppUserDto user, CancellationToken ct = default)
     {
         var jwtSettings = _configuration.GetSection("JwtSetting");
 
@@ -79,34 +78,34 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
         {
             new(JwtRegisteredClaimNames.Sub , user.UserId.ToString()),
             new(JwtRegisteredClaimNames.PhoneNumber , user.Phone)
-          
+
         };
 
         foreach (var role in user.Roles)
         {
-            claims.Add(new (ClaimTypes.Role,  role));
+            claims.Add(new(ClaimTypes.Role, role));
         }
 
         var descriptor = new SecurityTokenDescriptor
         {
-          Subject = new ClaimsIdentity(claims),
-          Expires = expires,
-          Issuer = issuer,
-          Audience = audience,
-          SigningCredentials = new SigningCredentials(
+            Subject = new ClaimsIdentity(claims),
+            Expires = expires,
+            Issuer = issuer,
+            Audience = audience,
+            SigningCredentials = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
             SecurityAlgorithms.HmacSha256Signature)
-        }; 
+        };
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var securityToken = tokenHandler.CreateToken(descriptor);
-     
+
 
         var rawRefreshToken = GenerateRefreshToken();
 
         var refreshTokenResult = RefreshToken.Create(
             Guid.NewGuid(),
-            HashToken(rawRefreshToken),   
+            HashToken(rawRefreshToken),
             user.UserId,
             DateTime.UtcNow.AddDays(1));
 
@@ -122,10 +121,10 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
         return new TokenResponse
         {
             AccessToken = tokenHandler.WriteToken(securityToken),
-            RefreshToken = rawRefreshToken,   
+            RefreshToken = rawRefreshToken,
             ExpiresOnUtc = expires
         };
-    }  
+    }
     public async Task<Result<TokenResponse>> RefreshTokenAsync(string rawRefreshToken, CancellationToken ct = default)
     {
         var incomingHash = HashToken(rawRefreshToken);
@@ -162,7 +161,7 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
             Guid.NewGuid(),
             HashToken(newRawRefreshToken),
             existingToken.UserId,
-           Convert.ToDateTime( jwtSettings["RefreshTokenExpiryDays"]!));
+           Convert.ToDateTime(jwtSettings["RefreshTokenExpiryDays"]!));
 
         if (newRefreshTokenResult.IsError)
         {
@@ -205,6 +204,7 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
             RefreshToken = newRawRefreshToken,
             ExpiresOnUtc = expires
         };
+
     } 
     public async Task RevokeTokenAsync(string rawRefreshToken , Guid userId ,  CancellationToken ct = default)
     {
@@ -234,7 +234,6 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(rawToken));
         return Convert.ToHexString(bytes);
     }
-    
-  
+
 
 }
