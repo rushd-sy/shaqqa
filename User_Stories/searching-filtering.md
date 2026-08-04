@@ -22,7 +22,7 @@
       (no description/amenity search).
     * Results include only available advertisements (`is_available = TRUE`). Advertisements of deactivated users
       or companies are excluded from results.
-    * When an authenticated user performs a search, the system records the query to their search history as a side effect (see `history.md`).
+    * When an authenticated user performs a search, the system records the query to their search history as a side effect (see `history/RecentSearches.md` and `history/RecentFilters.md`).
 
 * **Edge Cases:**
     * The search returns no matching results => returns `200 OK` with an empty array: `{ "data": [] }`.
@@ -40,7 +40,7 @@
 * **Endpoint:** GET /api/v1/properties
 * **Description:** Searches, filters, sorts, and paginates **available** advertisements (`is_available = TRUE`;
   advertisements of deactivated users/companies are excluded). When the authenticated user searches, the query
-  is automatically recorded to their search history (refer to `history.md`).
+  is automatically recorded to their search history (refer to `history/RecentSearches.md` and `history/RecentFilters.md`).
 * **Headers:** `Authorization: Bearer <User_Token>` (optional; required only to record search history)
 * **Query Parameters:**
     * `q` (string, optional): Free-text keyword search (e.g., "house in newyork"). Matches against
@@ -97,7 +97,8 @@ Refer to `PropertyDetails.md` for the full `User` and `Property` table definitio
 | `contractType` | `Advertisement.contract_type` (`RENT`, `SALE`) |
 | `sortBy=date` | `Advertisement.publish_date` |
 
-Additionally, this feature relies on the `SearchQuery` and `SavedSearch` tables defined in `history.md`:
-the search endpoint records the `q` text to `SearchQuery` and the filter parameters to `SavedSearch`
-(both automatically, independently of each other). Saved filter combinations re-run against this endpoint
+Additionally, this feature relies on the `SearchQuery` and `RecentFilter` tables defined in
+`history/RecentSearches.md` and `history/RecentFilters.md`:
+the search endpoint records the `q` text to `SearchQuery` and the filter parameters to `RecentFilter`
+(both automatically, independently of each other). Filters re-run against this endpoint
 via "View Results".

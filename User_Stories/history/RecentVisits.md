@@ -13,8 +13,9 @@
   * The system should save recent visits for each user.
 * **Business Rules:**
   * Each user is limited to the last 10 visits.
-  * Visits: keep only the **last 10** (`LIFO` - most recently recorded first); adding an 11th record evicts the oldest.
-  * A repeat visit to an advertisement updates the existing record's `viewed_at` timestamp instead of inserting a duplicate entry.
+  * Visits: keep only the **last 10** (most recently recorded first); adding an 11th record evicts the oldest.
+  * A repeat visit to an advertisement updates the existing record's `viewed_at` timestamp instead of inserting
+    a duplicate entry — implemented as an **upsert** on `UNIQUE(user_id, advertisement_id)` (see Database Schema).
 * **Edge Cases:**
   * User has never visited anything → the endpoint returns an empty list (200), not an error.
   * Two rapid/concurrent visits for the same advertisement → must still result in a single record, no duplicates.
@@ -32,7 +33,7 @@
 * **Description:** Displays the full advertisement (property details, media, description). As a side effect, the
   server automatically records a recent visit — no separate client request is required.
 * **Path Parameters:**
-  * `id_advertisement` (UUID/INT, required): The unique identifier of the advertisement.
+  * `id_advertisement` (INT, required): The unique identifier of the advertisement.
 * **Headers:** `Authorization: Bearer <User_Token>` (Optional for public viewing)
 * **Note:** Refer to `PropertyListing.md` and `PropertyDetails.md` for the full response format. If the user is
   not authenticated, the advertisement still loads but the visit is not recorded.
@@ -41,10 +42,8 @@
   * `404 Not Found`: Advertisement does not exist or is inactive/deleted. Nothing is recorded.
 
 ## 2. Get Recent Visits
-* **Endpoint:** GET /api/user/viewed-advertisements?limit=10
+* **Endpoint:** GET /api/user/recent-visits
 * **Description:** select latest 10 visits
-* **Query Parameters:**
-  * `limit` (integer, optional): max number of visits to return (default `10`, max `10`).
 * **Headers:** `Authorization: Bearer <User_Token>`
 * **Response (200 OK Status):**
 ```json
@@ -62,7 +61,6 @@
 }
 ```
 * **Error Responses:**
-  * `400 Bad Request`: Invalid `limit` (e.g., negative or zero).
   * `401 Unauthorized`: Missing or invalid token.
 
 # 4. Database Schema (Entities & Attributes)
@@ -72,3 +70,7 @@
 * **`user_id`** (FK): Identifier for the user.
 * **`advertisement_id`** (FK -> `Advertisement.id_advertisement`): Identifier for the advertisement.
 * **`viewed_at`** (DATETIME): Timestamp when the advertisement was viewed.
+* **Unique:** `UNIQUE(user_id, advertisement_id)` — a repeat visit is an upsert
+  (`MERGE ... ON (user_id, advertisement_id) WHEN MATCHED THEN UPDATE SET viewed_at = GETDATE()`), so the
+  timestamp is refreshed instead of a duplicate-key error. This also guarantees that two rapid/concurrent
+  visits still result in a single record. The "keep last 10" eviction runs after the upsert.

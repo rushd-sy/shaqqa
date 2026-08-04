@@ -2,39 +2,40 @@
 
 ## User
 - As a user, I want my keywords to be recorded automatically so that I can quickly re-pick one from the list under the search field.
-- As a user, I want to remove any single item from my Recent Searches or my Saved Searches.
+- As a user, I want to remove any single item from my Recent Searches.
 
 # 2. Acceptance Criteria & Edge Cases
 
 ## Feature: Recent Searches
 
-> **How Recent Searches differ from Saved Searches:**
+> **How Recent Searches differ from Recent Filters:**
 >
-> | | 🅰 Recent Searches | 🅱 Saved Searches |
+> | | 🅰 Recent Searches | 🅱 Recent Filters |
 > |---|---|---|
-> | **Meaning of the name** | "Recent" = the last keywords you typed | "Saved" = stored filter combinations |
+> | **Meaning of the name** | "Recent" = the last keywords you typed | "Recent" = the last filter combinations you applied |
 > | **What it stores** | The raw text keyword only (`q`, e.g. "al-furqan") | Filter parameters only (price, city, rooms, ...) |
 > | **Never stores** | Any filter parameters | Any `q` text |
-> | **Displayed as** | A text list under the search field | A card in the "Saved Searches" section |
+> | **Displayed as** | A text list under the search field | A card in the "Recent Filters" section |
 > | **Purpose** | Quickly re-pick a keyword you typed before | Re-run a specific, filtered search |
 
 * **Acceptance Criteria:**
   * **Recent Searches:** text keywords (`q`) are recorded automatically as a side effect of the search
     endpoint — no separate client request is required. They appear as a list under the search field.
-  * A Recent record never stores filters: Recent and Saved records are **independent**.
+  * A Recent record never stores filters: Recent Searches and Recent Filters are **independent**.
   * The user can remove any single record from the recent-search list.
 * **Business Rules:**
   * Each user is limited to the last 10 keyword searches.
-  * Keyword searches: keep only the **last 10** (`LIFO` - most recently recorded first); adding an 11th
+  * Keyword searches: keep only the **last 10** (most recently recorded first); adding an 11th
     record evicts the oldest.
   * A repeated identical keyword search updates the existing record's `searched_at` timestamp instead of
-    inserting a duplicate entry.
+    inserting a duplicate entry — implemented as an **upsert** on `UNIQUE(user_id, query)` (see Database Schema).
 * **Edge Cases:**
   * User has never searched anything → the endpoint returns an empty list (200), not an error.
   * Empty or blank keyword → nothing is recorded to Recent Searches.
   * Unauthenticated search still returns results, but nothing is recorded.
   * Unauthenticated request on the recent-searches endpoints → `401 Unauthorized`.
   * Deleting a record that does not exist or does not belong to the user → `404 Not Found`.
+  * The `userId` is always derived from the token → a user can never view or modify another user's history.
 
 # 3. API Endpoints
 
@@ -88,3 +89,6 @@
 * **`user_id`** (FK): Identifier for the user.
 * **`query`** (NVARCHAR(255)): The raw text query entered by the user. Never stores filters.
 * **`searched_at`** (DATETIME): Timestamp when search was executed.
+* **Unique:** `UNIQUE(user_id, query)` — a repeated identical keyword is an upsert
+  (`MERGE ... ON (user_id, query) WHEN MATCHED THEN UPDATE SET searched_at = GETDATE()`), so the timestamp is
+  refreshed instead of a duplicate-key error. The "keep last 10" eviction runs after the upsert.
