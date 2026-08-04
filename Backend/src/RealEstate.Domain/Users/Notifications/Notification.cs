@@ -5,14 +5,15 @@ namespace RealEstate.Domain.Users.Notifications;
 
 public class Notification : AuditableEntity
 {
-    public Notification(Guid id) : base(id)
-    {
-    }
+    public Notification(Guid id) : base(id) { }
 
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
 
     public NotificationType Type { get; set; }
+    public NotificationChannel Channel { get; set; }
     public string Message { get; set; } = string.Empty;
     public bool IsRead { get; set; }
+
+    public DateTime? SentAt { get; set; }
 }
