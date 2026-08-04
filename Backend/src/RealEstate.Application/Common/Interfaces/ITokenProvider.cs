@@ -13,5 +13,4 @@ public interface ITokenProvider
     Result<ClaimsPrincipal> GetPrincipalFromExpiredToken(string token);
     Task<Result<TokenResponse>> RefreshTokenAsync( string rawRefreshToken, CancellationToken ct = default);
 
-    Task RevokeTokenAsync(string rawRefreshToken);
 }

@@ -1,3 +1,4 @@
+using System.Net;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -13,10 +14,11 @@ using RealEstate.Domain.Common.Results;
 using RealEstate.Domain.Identity;
 using RealEstate.Domain.Users;
 using RealEstate.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Http;
 
 namespace RealEstate.Infrastructure.Identity;
 
-public class TokenProvider(IConfiguration configuration , AppDbContext context ,UserManager<User> userManager ) : ITokenProvider
+public class TokenProvider(IConfiguration configuration , AppDbContext context ,UserManager<User> userManager ) : ITokenProvider , IAuthServices
 {
     private readonly IConfiguration _configuration = configuration;
     private readonly AppDbContext _context = context;
@@ -204,18 +206,23 @@ public class TokenProvider(IConfiguration configuration , AppDbContext context ,
             ExpiresOnUtc = expires
         };
     } 
-    public async Task RevokeTokenAsync(string rawRefreshToken)
+    public async Task RevokeTokenAsync(string rawRefreshToken , Guid userId ,  CancellationToken ct = default)
     {
-        var  refreshToken = HashToken(rawRefreshToken);
-        var token = await _context.RefreshTokens.
-            FirstOrDefaultAsync(x => x.TokenHash == refreshToken);
+        if (string.IsNullOrWhiteSpace(rawRefreshToken))
+        {
+            throw new InvalidOperationException("Invalid refresh token.");
+        }
+
+        var refreshTokenHash = HashToken(rawRefreshToken);
+        var token = await _context.RefreshTokens
+        .FirstOrDefaultAsync(x => x.TokenHash == refreshTokenHash && x.UserId == userId, ct);
 
         if (token is null || !token.IsActive)
-            throw new Exception("Invalid refresh token.");
+            throw new BadHttpRequestException("Invalid refresh token.");
 
         token.IsRevoked = true;
         token.RevokeAtUtc = DateTimeOffset.UtcNow;
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(ct);
     }
     private static string GenerateRefreshToken()
     {
