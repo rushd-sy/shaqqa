@@ -1,3 +1,4 @@
+using System.Net;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -12,10 +13,11 @@ using RealEstate.Application.Identity.DTOs;
 using RealEstate.Domain.Common.Results;
 using RealEstate.Domain.Identity;
 using RealEstate.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Http;
 
 namespace RealEstate.Infrastructure.Identity;
 
-public class TokenProvider(IConfiguration configuration, AppDbContext context, UserManager<ApplicationUser> userManager) : ITokenProvider
+public class TokenProvider(IConfiguration configuration, AppDbContext context, UserManager<ApplicationUser> userManager) : ITokenProvider , IAuthServices
 {
     private readonly IConfiguration _configuration = configuration;
     private readonly AppDbContext _context = context;
@@ -202,6 +204,25 @@ public class TokenProvider(IConfiguration configuration, AppDbContext context, U
             RefreshToken = newRawRefreshToken,
             ExpiresOnUtc = expires
         };
+
+    } 
+    public async Task RevokeTokenAsync(string rawRefreshToken , Guid userId ,  CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(rawRefreshToken))
+        {
+            throw new InvalidOperationException("Invalid refresh token.");
+        }
+
+        var refreshTokenHash = HashToken(rawRefreshToken);
+        var token = await _context.RefreshTokens
+        .FirstOrDefaultAsync(x => x.TokenHash == refreshTokenHash && x.UserId == userId, ct);
+
+        if (token is null || !token.IsActive)
+            throw new BadHttpRequestException("Invalid refresh token.");
+
+        token.IsRevoked = true;
+        token.RevokeAtUtc = DateTimeOffset.UtcNow;
+        await _context.SaveChangesAsync(ct);
     }
     private static string GenerateRefreshToken()
     {
@@ -213,7 +234,6 @@ public class TokenProvider(IConfiguration configuration, AppDbContext context, U
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(rawToken));
         return Convert.ToHexString(bytes);
     }
-
 
 
 }
