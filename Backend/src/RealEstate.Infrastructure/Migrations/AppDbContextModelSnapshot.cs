@@ -124,12 +124,7 @@ namespace RealEstate.Infrastructure.Migrations
 
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
-
-<<<<<<< HEAD
-<<<<<<< HEAD
             modelBuilder.Entity("RealEstate.Domain.PhoneVerifications.PhoneVerification", b =>
-=======
-=======
             modelBuilder.Entity("RealEstate.Domain.Advertisements.Advertisement", b =>
                 {
                     b.Property<Guid>("Id")
@@ -177,7 +172,7 @@ namespace RealEstate.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Advertisements", (string)null);
-                });
+                }));
 
             modelBuilder.Entity("RealEstate.Domain.Amenities.Amenity", b =>
                 {
@@ -414,9 +409,7 @@ namespace RealEstate.Infrastructure.Migrations
                     b.ToTable("Histories", (string)null);
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("RealEstate.Domain.Identity.RefreshToken", b =>
->>>>>>> origin/main
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -428,17 +421,14 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-<<<<<<< HEAD
                     b.Property<DateTimeOffset>("ExpiresAtUtc")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<bool>("IsUsed")
-=======
+                    b.Property<bool>("IsUsed");
                     b.Property<DateTimeOffset>("ExpiresOnUtc")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<bool>("IsRevoked")
->>>>>>> origin/main
                         .HasColumnType("bit");
 
                     b.Property<string>("LastModifiedBy")
@@ -447,7 +437,6 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("LastModifiedUtc")
                         .HasColumnType("datetimeoffset");
 
-<<<<<<< HEAD
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -461,7 +450,7 @@ namespace RealEstate.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PhoneVerifications", (string)null);
-=======
+
                     b.Property<DateTimeOffset>("RevokeAtUtc")
                         .HasColumnType("datetimeoffset");
 
@@ -481,7 +470,6 @@ namespace RealEstate.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens");
->>>>>>> origin/main
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Locations.Location", b =>
