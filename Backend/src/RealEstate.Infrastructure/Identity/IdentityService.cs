@@ -6,6 +6,7 @@ using RealEstate.Domain.PhoneVerifications;
 using RealEstate.Domain.Users;
 using RealEstate.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using RealEstate.Application.Identity;
 
 namespace RealEstate.Infrastructure.Identity;
 
@@ -13,18 +14,18 @@ public class IdentityService : IIdentityService
 {
     private readonly IPhoneVerificationRepository _phoneVerificationRepository;
     private readonly UserManager<ApplicationUser> _userManager;
-    //private readonly ITokenProvider _tokenProvider;
+    private readonly ITokenProvider _tokenProvider;
     private readonly AppDbContext _context;
 
     public IdentityService(
         IPhoneVerificationRepository phoneVerificationRepository,
         UserManager<ApplicationUser> userManager,
-        //ITokenProvider tokenProvider,
+        ITokenProvider tokenProvider,
         AppDbContext context)
     {
         _phoneVerificationRepository = phoneVerificationRepository;
         _userManager = userManager;
-        //_tokenProvider = tokenProvider;
+        _tokenProvider = tokenProvider;
         _context = context;
     }
 
@@ -120,7 +121,7 @@ public class IdentityService : IIdentityService
         await _context.SaveChangesAsync(cancellationToken);
         return fakeToken;
 
-        // var tokenResponse = await _tokenProvider.GenerateTokenAsync(user);
+         //var tokenResponse = await _tokenProvider.GenerateJwtTokenAsync(,cancellationToken);
         // return Result.Success(tokenResponse);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using RealEstate.Application.Identity.DTOs;
 using RealEstate.Domain.Common.Results;
+using RealEstate.Application.Identity;
 
 namespace RealEstate.Application.Common.Interfaces;
 
