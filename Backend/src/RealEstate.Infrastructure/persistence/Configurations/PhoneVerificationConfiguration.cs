@@ -18,7 +18,7 @@ public class PhoneVerificationConfiguration : IEntityTypeConfiguration<PhoneVeri
 
         builder.Property(pv => pv.VerificationCode)
             .IsRequired()
-            .HasMaxLength(10);
+            .HasMaxLength(256);
         builder.HasIndex(pv => new { pv.PhoneNumber, pv.IsUsed, pv.ExpiresAtUtc });
     }
 }
