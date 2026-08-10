@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RealEstate.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using RealEstate.Infrastructure.Persistence;
 namespace RealEstate.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260808214224_AddAllConfigurationsAndTables")]
+    partial class AddAllConfigurationsAndTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -518,9 +521,6 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("ExpiresAtUtc")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("FailedAttempts")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsUsed")
                         .HasColumnType("bit");
 
@@ -541,8 +541,6 @@ namespace RealEstate.Infrastructure.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PhoneNumber", "IsUsed", "ExpiresAtUtc");
 
                     b.ToTable("PhoneVerifications", (string)null);
                 });

@@ -8,12 +8,12 @@ public class RegisterWithOtpDtoValidator : AbstractValidator<RegisterWithOtpDto>
     public RegisterWithOtpDtoValidator()
     {
         RuleFor(x => x.PhoneNumber)
-            .NotEmpty().WithMessage("Phone number is required.")
-            .Matches(@"^[0-9]{10,15}$").WithMessage("Phone number format is invalid.");
+    .NotEmpty().WithMessage("Phone number is required.")
+    .Matches(@"^\+?[0-9]{10,15}$").WithMessage("Phone number format is invalid.");
 
         RuleFor(x => x.VerificationCode)
-            .NotEmpty().WithMessage("Verification code (OTP) is required.")
-            .Length(6).WithMessage("Verification code must be exactly 6 digits.");
+    .NotEmpty().WithMessage("Verification code (OTP) is required.")
+    .Matches(@"^\d{6}$").WithMessage("Verification code must be exactly 6 digits.");
 
         RuleFor(x => x.FirstName)
             .NotEmpty().WithMessage("First name is required.")

@@ -26,7 +26,7 @@ namespace RealEstate.API.Extensions
              {
                  options.Password.RequiredLength = 8;
                  options.Password.RequireNonAlphanumeric = true;
-                 options.User.RequireUniqueEmail = true;
+                 options.User.RequireUniqueEmail = false;
                  options.Lockout.MaxFailedAccessAttempts = 5;
              })
                  .AddEntityFrameworkStores<AppDbContext>()

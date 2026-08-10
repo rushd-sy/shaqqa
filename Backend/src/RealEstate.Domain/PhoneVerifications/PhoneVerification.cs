@@ -10,7 +10,8 @@ namespace RealEstate.Domain.PhoneVerifications
         public string PhoneNumber { get; set; } = string.Empty;
         public string VerificationCode { get; set; } = string.Empty;
         public DateTimeOffset ExpiresAtUtc { get; set; }
-        public bool IsExpired => DateTimeOffset.UtcNow > ExpiresAtUtc;
+        public bool IsExpired(DateTimeOffset now) => now > ExpiresAtUtc;
         public bool IsUsed { get; set; } = false;
+        public int FailedAttempts { get; set; } = 0;
     }
 }

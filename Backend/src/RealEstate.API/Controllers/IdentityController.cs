@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using RealEstate.Application.Common.Interfaces;
 using RealEstate.Application.Identity.DTOs;
-using FluentValidation;
+using RealEstate.Domain.Common.Results;
 
 namespace RealEstate.API.Controllers;
 
@@ -21,6 +23,7 @@ public class IdentityController : ControllerBase
     }
 
     [HttpPost("send-otp")]
+    [EnableRateLimiting("otp-policy")]
     public async Task<IActionResult> SendOtp([FromBody] SendOtpDto dto, CancellationToken cancellationToken)
     {
         var validationResult = await _sendOtpValidator.ValidateAsync(dto, cancellationToken);
@@ -36,7 +39,7 @@ public class IdentityController : ControllerBase
         }
 
         var result = await _identityService.SendOtpAsync(dto, cancellationToken);
-        return Ok(result);
+        return HandleResult(result);
     }
     [HttpPost("register-with-otp")]
     public async Task<IActionResult> RegisterWithOtp([FromBody] RegisterWithOtpDto dto, CancellationToken cancellationToken)
@@ -54,6 +57,26 @@ public class IdentityController : ControllerBase
         }
 
         var result = await _identityService.RegisterWithOtpAsync(dto, cancellationToken);
-        return Ok(result);
+        return HandleResult(result);
+    }
+
+    private IActionResult HandleResult<T>(Result<T> result)
+    {
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+
+        var error = result.TopError;
+
+        return error.Type switch
+        {
+            ErrorKind.Validation => BadRequest(result.Errors),
+            ErrorKind.NotFound => NotFound(result.Errors),
+            ErrorKind.Conflict => Conflict(result.Errors),
+            ErrorKind.Unauthorized => Unauthorized(result.Errors),
+            ErrorKind.Forbidden => StatusCode(StatusCodes.Status403Forbidden, result.Errors),
+            _ => StatusCode(StatusCodes.Status500InternalServerError, result.Errors)
+        };
     }
 }
