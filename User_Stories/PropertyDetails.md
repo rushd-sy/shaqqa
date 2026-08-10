@@ -3,20 +3,16 @@
 ## Buyer
 - As a buyer, I want to view detailed technical specifications (area, rooms, bathrooms, floor, etc.) so that I can evaluate if the property fits my needs.
 - As a buyer, I want to see high-quality images of the property so that I can visually assess its condition.
-- As a buyer, I want to view videos or virtual tours so that I can better understand the layout and space.
 - As a buyer, I want to read a clear property description so that I can understand its features and advantages.
 - As a buyer, I want to know additional details (furnishing status, age of property, amenities) so that I can make an informed decision.
 
 ## Seller
 - As a seller, I want to add technical specifications (area, rooms, bathrooms, etc.) so that buyers can understand the property details.
 - As a seller, I want to upload multiple images for my property so that I can showcase it effectively.
-- As a seller, I want to upload videos or virtual tours so that I can attract more buyers.
 - As a seller, I want to write and edit a property description so that I can highlight key selling points.
-- As a seller, I want to update or delete media (images/videos) so that I can keep my listing accurate.
-- As a seller, I want to save my progress as a draft so I can finish adding technical specs later.
+- As a seller, I want to provide all required details and at least one image in one step, so that my advertisement is submitted for verification immediately.
 
-## Admin
-- As an Admin, I want to flag/hide media that violates community guidelines (e.g., blurred images, contact info in photos) to maintain platform quality.
+> **Note:** Videos are **not** part of the program — no video storage, preview, or management anywhere (including third-party platforms like YouTube).
 
 
 # 2. Acceptance Criteria & Edge Cases
@@ -44,17 +40,19 @@
 
 ## Feature: Images and Media
 * **Acceptance Criteria:**
-  * At least 1 image is required for an active listing.
-  * Media supports images and videos (enum `MediaType` `{ Image, Video }`).
-  * One media item must be marked as cover (`IsCover` = `TRUE`) and is returned first in the response.
-  * Remaining media items are sorted by `DisplayOrder` in ascending order (If not specified, the first image is used as default cover).
+  * At least 1 image is required before an advertisement can be submitted for verification (and therefore for an active listing).
+  * Only images are supported — the `Media` entity holds images only.
+  * One media item must be marked as cover (`is_cover` = `TRUE`) and is returned first in the response.
+  * Remaining media items are sorted by `display_order` in ascending order (If not specified, the first image is used as default cover).
   * Max media count defined (Max = 50).
   * Images are compressed upon upload (target size: < 500KB).
-  * URL video should be a valid YouTube URL.
+  * Allowed image formats: `JPEG`, `PNG`, `WebP`.
+  * Images are stored on the platform file system under `wwwroot/uploads/advertisements/{id_advertisement}/` and served **only** through `GET /api/v1/media/{id_media}` — the internal `file_path` is never exposed in responses; APIs return the `id_media` **UUID** (see `PropertyListing.md`).
 * **Edge Cases:**
-  * No property images available: API returns `400 Bad Request` `{ "At least one image is required" }`.
+  * No property images available at submission time: API returns `400 Bad Request` `{ "At least one image is required" }`.
   * Large number of images (images > 50): API returns `400 Bad Request` `{ "message": "Maximum number of media files is 50" }`.
-  * Invalid images URLs: API returns `400 Bad Request` `{ "Invalid media URL format" }`.
+  * Unsupported image format or file size above the limit: API returns `400 Bad Request` `{ "message": "Invalid image file" }`.
+  * Deleting the cover image: the first remaining image by `display_order` becomes the new cover.
 
 ## Feature: Property Description
 * **Acceptance Criteria:**
@@ -64,157 +62,14 @@
   * Property description is missing.
 
 
-# 3. API Endpoints (Login & Roles)
+# 3. Database Schema (Entities & Attributes)
 
-## 1. Create Property
-* **Endpoint:** POST /Properties
-* **Description:** Creates a new property listing.
-* **Request Body:**
-```json
-{
-  "price": 100000,
-  "area": { "value": 120, "unit": "SqM" },
-  "location": { "latitude": 36.2021, "longitude": 37.1343, "address": "Aleppo, Syria" },
-  "description": "Property description here"
-}
-```
-* **Response (201 Created):**
-```json
-{
-  "message": "Property created successfully"
-}
-```
-* **Error Responses:**
-  * `400 Bad Request`: Missing required fields (price, area, location, description), invalid values (price <= 0, area <= 0), or invalid location format.
-
-## 2. Get All Properties
-* **Endpoint:** GET /Properties
-* **Description:** Retrieves a list of properties.
-* **Request Body:**
-```json
-{}
-```
-* **Response (200 OK):**
-```json
-[
-  {
-    "property_id": 1,
-    "price": 100000,
-    "description": "Property description here"
-  }
-]
-```
-* **Error Responses:**
-  * `400 Bad Request`: Invalid request parameters.
-
-## 3. Get Property Details
-* **Endpoint:** GET /Properties/{id}
-* **Description:** Returns full property details (technical specs, media, description).
-* **Path Parameters:**
-  * `id`: Property ID
-* **Request Body:**
-```json
-{}
-```
-* **Response (200 OK):**
-```json
-{
-  "property_id": 1,
-  "price": 100000,
-  "area": { "value": 120, "unit": "SqM" },
-  "location": { "latitude": 36.2021, "longitude": 37.1343, "address": "Aleppo, Syria" },
-  "description": "Property description here",
-  "media": []
-}
-```
-* **Error Responses:**
-  * `400 Bad Request`: Invalid property id (e.g., negative or zero).
-  * `404 Not Found`: Property does not exist or is inactive/deleted.
-
-## 4. Update Property
-* **Endpoint:** PATCH /Properties/{id}
-* **Description:** Updates existing property details.
-* **Path Parameters:**
-  * `id`: Property ID
-* **Request Body:**
-```json
-{
-  "price": 110000
-}
-```
-* **Response (200 OK):**
-```json
-{
-  "message": "Property updated successfully"
-}
-```
-* **Error Responses:**
-  * `400 Bad Request`: Invalid values (price <= 0, invalid location, etc.) or Invalid enum values (PropertyType, LegalStatus).
-  * `404 Not Found`: Property does not exist.
-
-## 5. Delete Property
-* **Endpoint:** DELETE /Properties/{id}
-* **Description:** Deletes a property listing.
-* **Path Parameters:**
-  * `id`: Property ID
-* **Request Body:**
-```json
-{}
-```
-* **Response (204 No Content):**
-```json
-{}
-```
-* **Error Responses:**
-  * `404 Not Found`: Property does not exist.
-
-## 6. Add Property Media
-* **Endpoint:** POST /Properties/{id}/Media
-* **Description:** Adds media to a specific property.
-* **Path Parameters:**
-  * `id`: Property ID
-* **Request Body:**
-```json
-{
-  "type": "Image",
-  "url": "http://example.com/image.jpg",
-  "is_cover": true
-}
-```
-* **Response (201 Created):**
-```json
-{
-  "message": "Media added successfully"
-}
-```
-* **Error Responses:**
-  * `400 Bad Request`: Invalid media URL, unsupported media type, media count exceeds limit (max 50), or no image provided for active property.
-  * `404 Not Found`: Property does not exist.
-
-## 7. Delete Property Media
-* **Endpoint:** DELETE /Properties/{id}/Media/{mediaId}
-* **Description:** Deletes a specific media item from a property.
-* **Path Parameters:**
-  * `id`: Property ID
-  * `mediaId`: Media ID
-* **Request Body:**
-```json
-{}
-```
-* **Response (204 No Content):**
-```json
-{}
-```
-* **Error Responses:**
-  * `404 Not Found`: Property does not exist or media does not exist.
-
-
-# 4. Database Schema (Entities & Attributes)
+> **Scope note:** This document defines the `Property` entity only. The `Media` and `Advertisement` tables are defined in `PropertyListing.md`. The `User` table is defined in `users_doc/all-users.md`. The `Property` entity has **no lifecycle status** — public visibility is governed entirely by the parent `Advertisement.status` (see `PropertyListing.md` and `VerificationRequest.md`). All API endpoints for property/advertisement operations live in `PropertyListing.md`.
 
 ## 1. Table: `Property`
-* **`property_id`** (PK, INT): Property identifier.
+* **`id_property`** (PK, INT): Property identifier.
 * **`property_type`** (ENUM): `APARTMENT`, `LAND`, `SHOP`, `VILLA`, `OFFICE`.
-* **`description`** (STRING): Description of the property.
+* **`description`** (TEXT): Description of the property.
 * **`price`** (DECIMAL): Price of the property.
 * **`area_value`** (DECIMAL): Area numerical value.
 * **`area_unit`** (ENUM): Area unit (`SQM`, `HECTARE`).
@@ -228,27 +83,11 @@
 * **`legal_status`** (ENUM): `LEASEHOLD`, `FREEHOLD`, `COURT_REGISTERED`, `SHARED_OWNERSHIP`.
 * **`construction_date`** (DATETIME): Building construction date.
 
-## 2. Table: `User`
-* **`user_id`** (PK, INT): User identifier.
-* **`name`** (STRING): User name.
-* **`phone_number`** (STRING): User phone number.
-* **`email`** (STRING): User email address.
-* **`user_role`** (ENUM): `SELLER`, `BUYER`.
-
-## 3. Table: `Media`
-* **`media_id`** (PK, INT): Media identifier.
-* **`property_id`** (FK -> `Property.property_id`, INT): Associated property identifier.
-* **`type`** (ENUM): `IMAGE`, `VIDEO`.
-* **`url`** (STRING): Media URL.
-* **`thumbnail_url`** (STRING, NULLABLE): Required for video thumbnail.
-* **`is_cover`** (BOOLEAN): `TRUE` if it is the cover media item.
-* **`display_order`** (INT): Sorting order for display.
-
-## 4. Table: `Amenities`
+## 2. Table: `Amenities`
 * **`amenity_id`** (PK, INT): Amenity identifier.
 * **`name`** (STRING): Name of the amenity.
 * **`description`** (STRING, NULLABLE): Description of the amenity.
 
-## 5. Table: `PropertyAmenities`
-* **`property_id`** (FK -> `Property.property_id`, INT): Associated property identifier.
+## 3. Table: `PropertyAmenities`
+* **`id_property`** (FK -> `Property.id_property`, INT): Associated property identifier.
 * **`amenity_id`** (FK -> `Amenities.amenity_id`, INT): Associated amenity identifier.

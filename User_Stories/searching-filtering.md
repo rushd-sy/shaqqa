@@ -20,7 +20,7 @@
     * There should be an option to clear all filters.
     * The free-text search (`q`) matches against `address`, `city`, `country`, and the advertisement `title`
       (no description/amenity search).
-    * Results include only available advertisements (`is_available = TRUE`). Advertisements of deactivated users
+    * Results include only advertisements with `status` = `ACTIVE`. Advertisements of deactivated users
       or companies are excluded from results.
     * When an authenticated user performs a search, the system records the query to their search history as a side effect (see `history/RecentSearches.md` and `history/RecentFilters.md`).
 
@@ -38,7 +38,7 @@
 ## 1. Search and Filter Properties
 
 * **Endpoint:** GET /api/v1/properties
-* **Description:** Searches, filters, sorts, and paginates **available** advertisements (`is_available = TRUE`;
+* **Description:** Searches, filters, sorts, and paginates **active** advertisements (`status` = `ACTIVE`;
   advertisements of deactivated users/companies are excluded). When the authenticated user searches, the query
   is automatically recorded to their search history (refer to `history/RecentSearches.md` and `history/RecentFilters.md`).
 * **Headers:** `Authorization: Bearer <User_Token>` (optional; required only to record search history)
@@ -84,7 +84,9 @@
 
 # 4. Database Schema (Entities & Attributes)
 
-Refer to `PropertyDetails.md` for the full `User` and `Property` table definitions, and `PropertyListing.md` for the `Advertisement` table. Filters and sorting operate on `Property`, joined with `Advertisement`:
+Refer to `PropertyDetails.md` for the full `Property` table definition (the `User` table is defined in `users_doc/all-users.md`), and `PropertyListing.md` for the `Advertisement` table. Filters and sorting operate on `Property`, joined with `Advertisement`:
+
+> **ID strategy:** `propertyId` in results is the internal `Property.id_property` (**INT**). The public-facing IDs (`Advertisement.id_advertisement`, `User.id_user`) are **UUID**.
 
 | Query Parameter | Column |
 |---|---|
