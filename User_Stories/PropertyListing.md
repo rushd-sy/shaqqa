@@ -1,13 +1,13 @@
 # 1. User Stories
 
 ## Customer
-- As a user (Customer - property owner), **I want** to add a property with its property details and optionally attach ownership documents **so that** I can publish verifiable advertisement on the program to potential customers.
+- As a user (Customer - property owner), **I want** to add a property with its property details **so that** I can publish verifiable advertisement on the program to potential customers.
 - As a user (Customer - property owner), **I want** to update my existing property advertisement **so that** I can correct details, prices, or change contact information.
 - As a user (Customer - property owner), **I want** to delete my property advertisement **so that** it is no longer visible once the property is sold or unavailable.
 - As a user (Customer), **I want** to view a list of published property advertisements **so that** I can discover properties easily and find a property that suits my needs.
 
 ## Agent (Broker)
-- As a user (Broker), **I want** to publish properties without ownership documents **so that** I can publish all properties advertisements that available from my real estate office.
+- As a user (Broker), **I want** to publish properties **so that** I can publish all properties advertisements that available from my real estate office.
 - As a user (Broker), **I want** my verification requests to be marked as high priority **so that** my advertisements are fast-tracked and published quickly.
 - As a user (Broker), **I want** to update and delete my published property advertisements **so that** I can maintain an accurate portfolio of available properties.
 
@@ -34,12 +34,11 @@
     * The user (`CUSTOMER`, `BROKER`, or `COMPANY_STAFF`) creates the advertisement with status **`PENDING`** and it is **automatically submitted for verification** (a `PUBLISH` `VerificationRequest` is created in the same transaction).
     * The advertisement becomes visible to all `CUSTOMER`s only when its status is `ACTIVE` (approved by Shaqqa Admin/Staff — see `VerificationRequest.md`).
     * `BROKER` and `COMPANY_STAFF` verification requests are marked `HIGH` priority so they are reviewed first.
-    * Ownership documents are **optional** and only available to `CUSTOMER` (brokers and company staff do not have the option to upload them).
     * At least 1 image is required before the advertisement can be created (and therefore before submission).
 * **Edge Cases:**
     * Public infrastructure (such as hospitals, schools, mosques or government sites) as a selected location should be ignored.
     * Outside Syria borders as the selected location should be ignored.
-    * The user does not possess a document confirming ownership of the property, if anyone can add a property, then the program will face issues with scammers.
+    * The user does not actually own the property: if anyone can add a property, the program will face issues with scammers.
     * Fake property prices, like low prices to attract more people on the program, or high prices to show it as valuable.
     * Add images for another building or location.
     * Fake phone numbers as contact information.
@@ -56,8 +55,9 @@
        * The replacement **keeps the original `publish_date`** of the first version (feed order stays stable) and sets `updated_at` to now.
     3. **`DRAFT` advertisement** (assigned **only** by a `NEEDS_EDIT` review) — saved **directly on the same row**; the save **auto-resubmits** the advertisement (a new verification request is created and the status becomes `PENDING`). `updated_at` is set to now.
 * **Media behavior (details in Feature: Media Management):**
-    * Scenarios (1) and (3): media records are **not affected** unless the user explicitly changes media — they keep pointing to the same advertisement; changed/deleted media is cleaned up immediately, and files left unused are removed after the cycle resolves to save storage.
-    * Scenario (2): media records are **copied** to the replacement version (new `id_media` UUIDs, same files, cover, and order). The physical files are **shared** — no file is duplicated on disk. After the cycle resolves: on `APPROVED` the superseded version's media records are deleted and files no longer referenced by the replacement are removed from storage; on `REJECTED` the replacement version's media records are deleted and its unique files are removed.
+    * Media can be added directly through the update request itself (the `images` field of the `Update Advertisement` endpoint) or through the dedicated media endpoints — same rules apply either way.
+    * Scenarios (1) and (3): media records are **not affected** unless the user explicitly changes media — they keep pointing to the same advertisement and `File` records; deleted/changed media is cleaned up immediately.
+    * Scenario (2): media records are **copied** to the replacement version (new `id_media` UUIDs, same `id_file` references, cover, and order). The `File` records and their physical files are **shared** — nothing is duplicated on disk. After the cycle resolves: on `APPROVED` the superseded version's media records are deleted and any `File` no longer referenced by the replacement is removed from storage; on `REJECTED` the replacement version's media records are deleted and its `File` records are removed.
 * **Permissions:** the author of the advertisement, their managing `COMPANY_ADMIN`, or authorized `SHAQQA_ADMIN`/`SHAQQA_STAFF` can update the advertisement.
 * **Edge Cases:**
     * A user attempts to update an advertisement that belongs to another user.
@@ -99,9 +99,10 @@
        * **Deleting media is direct — no verification required** (applies to the version referenced by the request), but at least 1 image should be kept.
        * Setting the cover / `display_order` is **direct** (no verification).
     3. **`DRAFT` advertisement** — media changes are **direct** (no verification, no request involvement).
-* **ID and security:**
-    * `id_media` is a **UUID** and is the only media identifier returned in responses.
-    * **File paths are never exposed** in responses. Files are served through `GET /api/v1/media/{id_media}` only.
+* **ID and security (unified file storage):**
+    * Every uploaded file (media, company logos, ...) is stored as one record in the shared **`File`** table, referenced by its `id_file` (UUID) — see `FileStorage.md`. **No business table stores file paths or URLs.**
+    * `id_media` is a **UUID** returned in media responses together with `content_type` (the image format).
+    * **File paths are never exposed** in responses. Images are served through `GET /api/v1/media/{id_media}`; all other files through the generic file endpoint (see `FileStorage.md`).
 * Adding a new cover image replaces the current cover. Deleting the cover image: the first remaining image by `display_order` becomes the new cover.
 * **Edge Cases:**
     * Adding an image to an advertisement that does not exist: `404 Not Found`.
@@ -117,7 +118,7 @@
 
 ## 1. Create Advertisement
 * **Endpoint:** `POST /api/v1/advertisements`
-* **Description:** Creates a new advertisement with its property details as **`PENDING`** and **automatically submits it for verification** (creates a `PUBLISH` `VerificationRequest` in the same transaction). No DRAFT step. The same request uploads the initial images and, for `CUSTOMER`, the optional ownership documents.
+* **Description:** Creates a new advertisement with its property details as **`PENDING`** and **automatically submits it for verification** (creates a `PUBLISH` `VerificationRequest` in the same transaction). No DRAFT step. The same request uploads the initial images.
 * **Headers:** `Authorization: Bearer <User_Token>`
 * **Request Body:** `multipart/form-data`
     * `title` (string, required)
@@ -125,7 +126,6 @@
     * `contact_info` (string, required)
     * `property_details` (JSON string, required): the payload defined in `PropertyDetails.md`.
     * `images` (file[], required): at least 1 image (JPEG, PNG, or WebP, compressed < 500KB).
-    * `documents` (file[], optional): ownership documents — **only `CUSTOMER`** requests (see `VerificationRequest.md`).
 * **Response (201 Created):**
 ```json
 {
@@ -145,6 +145,7 @@
     * **`PENDING`:** saved directly on the same row; the existing `PENDING` verification request is **hard-deleted** and a new `PUBLISH` request is created (replacement — renews the verification cycle). `updated_at` is set to now.
     * **`ACTIVE`:** a **new `Advertisement` row** (replacement version, status `PENDING`) is created with an **`UPDATE` verification request**; the old version stays live until `APPROVED`, then the old version becomes `DELETED` and the new version becomes `ACTIVE`. The replacement keeps the original `publish_date` and sets `updated_at` to now.
     * **`DRAFT`** (assigned only by a `NEEDS_EDIT` review): saved directly on the same row and **auto-resubmitted** (a new verification request is created, status becomes `PENDING`). `updated_at` is set to now.
+    * When `images` are attached, media follows the Media Management rules (see Media Management): `PENDING` → added directly and the verification cycle is renewed; `ACTIVE` → added to a replacement version (staged for verification); `DRAFT` → added directly.
 * **Path Parameters:**
     * `id_advertisement` (UUID, required): The unique identifier of the advertisement.
 * **Headers:** `Authorization: Bearer <User_Token>`
@@ -152,8 +153,8 @@
     * `title` (string, required)
     * `contract_type` (enum, required): `SALE`, `RENT`.
     * `contact_info` (string, required)
-    * `property_details` (JSON string, required): the payload defined in `PropertyDetails.md`.
-    * `documents` (file[], optional): ownership documents — **only `CUSTOMER`** requests.
+    * `property_details` (JSON object, required): the payload defined in `PropertyDetails.md`.
+    * `images` (file[], optional): images to add directly through this endpoint (JPEG, PNG, or WebP, compressed < 500KB, max 50 images). Missing means no media changes.
 * **Response (200 OK) — PENDING:**
 ```json
 {
@@ -259,7 +260,7 @@
     "location": { "latitude": 36.2021, "longitude": 37.1343, "address": "Aleppo, Syria" },
     "description": "Property description here",
     "media": [
-      { "id_media": "1a2b3c4d-...-uuid", "is_cover": true, "display_order": 0 }
+      { "id_media": "1a2b3c4d-...-uuid", "content_type": "image/jpeg", "is_cover": true, "display_order": 0 }
     ]
   }
 }
@@ -285,6 +286,7 @@
 ```json
 {
   "id_media": "1a2b3c4d-...-uuid",
+  "content_type": "image/jpeg",
   "is_cover": false,
   "display_order": 3,
   "message": "Media added successfully."
@@ -295,6 +297,7 @@
 {
   "id_advertisement": "f3e1a9c7-...-uuid",
   "id_media": "1a2b3c4d-...-uuid",
+  "content_type": "image/jpeg",
   "id_verification_request": "6d2b4e8f-...-uuid",
   "message": "Media staged for verification. The current version stays live until approved."
 }
@@ -355,7 +358,7 @@
 
 ## 9. Get Media File
 * **Endpoint:** `GET /api/v1/media/{id_media}`
-* **Description:** Serves the image binary file. The file is addressed by its UUID — **the file path is never exposed** in any response. Public access is allowed only for media belonging to an `ACTIVE` advertisement; the owner (or their managing `COMPANY_ADMIN` / `SHAQQA_ADMIN` / `SHAQQA_STAFF`) can also access media of their own non-active versions.
+* **Description:** Serves the image binary file. The file is addressed by its UUID — **the file path is never exposed** in any response. The response `Content-Type` is taken from the file's `content_type` (format). Public access is allowed only for media belonging to an `ACTIVE` advertisement; the owner (or their managing `COMPANY_ADMIN` / `SHAQQA_ADMIN` / `SHAQQA_STAFF`) can also access media of their own non-active versions.
 * **Path Parameters:**
     * `id_media` (UUID, required): The unique identifier of the media item.
 * **Headers:** `Authorization: Bearer <User_Token>` (Optional for media of `ACTIVE` advertisements)
@@ -385,9 +388,9 @@
     * Transitions are driven by `VerificationRequest` (see `VerificationRequest.md`).
 
 ## 2. Table: `Media`
-* **`id_media`** (PK, UUID): Unique identifier of the media item — the only media identifier exposed in responses.
+* **`id_media`** (PK, UUID): Unique identifier of the media item — the business identifier returned in media responses.
 * **`id_advertisement`** (FK -> `Advertisement.id_advertisement`, UUID): Associated advertisement version identifier.
-* **`file_path`** (VARCHAR): Internal path of the stored image (e.g., `wwwroot/uploads/advertisements/b7f0c8a2/image1.jpg`). **Never exposed** in responses — files are served only via `GET /api/v1/media/{id_media}`.
+* **`id_file`** (FK -> `File.id_file`, UUID): The stored image. The shared `File` table and the generic file serving endpoint are defined in `FileStorage.md`. The image format is `File.content_type` — only image MIME types are allowed (`image/jpeg`, `image/png`, `image/webp`).
 * **`is_cover`** (BOOLEAN): `TRUE` if it is the cover media item.
 * **`display_order`** (INT): Sorting order for display.
 
@@ -398,7 +401,7 @@
 | Action | CUSTOMER | BROKER | COMPANY_STAFF | COMPANY_ADMIN | SHAQQA_ADMIN/STAFF |
 |---|---|---|---|---|---|
 | Create advertisement (status `PENDING`, auto-submitted) | Yes | Yes | Yes | No | No |
-| Submit for verification | Auto at creation (`NORMAL` priority, ownership doc optional) | Auto at creation (`HIGH` priority, no doc option) | Auto at creation (`HIGH` priority, no doc option) | No | No |
+| Submit for verification | Auto at creation (`NORMAL` priority) | Auto at creation (`HIGH` priority) | Auto at creation (`HIGH` priority) | No | No |
 | Update `PENDING` advertisement (replaces verification request) | Yes | Yes | Yes | Yes (staff ads) | Yes (moderation) |
 | Update `ACTIVE` advertisement (new version + verification) | Yes | Yes | Yes | Yes (staff ads) | Yes (moderation, direct) |
 | Update `DRAFT` advertisement (saved and auto-resubmitted) | Yes | Yes | Yes | Yes (staff ads) | Yes (moderation) |

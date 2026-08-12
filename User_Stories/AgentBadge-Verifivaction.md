@@ -120,7 +120,7 @@
 * **`id`** (PK, INT): Unique identifier for the real estate company.
 * **`name`** (VARCHAR): Name of the real estate company.
 * **`license_number`** (VARCHAR, UNIQUE): Unique license number of the company.
-* **`logo_url`** (VARCHAR): URL path for the company logo.
+* **`logo_file_id`** (FK -> `File.id_file`, NULLABLE): UUID of the stored company logo. Logos live in the shared `File` table (see `FileStorage.md`) and are served via `GET /api/v1/files/{id_file}` — no URL/path is stored.
 * **`verified`** (BOOLEAN): `TRUE` if the company is verified.
 * **`created_at`** (TIMESTAMP): Timestamp indicating when the record was created.
 

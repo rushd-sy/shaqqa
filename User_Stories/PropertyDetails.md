@@ -47,7 +47,7 @@
   * Max media count defined (Max = 50).
   * Images are compressed upon upload (target size: < 500KB).
   * Allowed image formats: `JPEG`, `PNG`, `WebP`.
-  * Images are stored on the platform file system under `wwwroot/uploads/advertisements/{id_advertisement}/` and served **only** through `GET /api/v1/media/{id_media}` — the internal `file_path` is never exposed in responses; APIs return the `id_media` **UUID** (see `PropertyListing.md`).
+  * Each image is stored as a shared `File` record (see `FileStorage.md`) — images are served **only** through `GET /api/v1/media/{id_media}`; the internal `stored_path` is never exposed, and APIs return the `id_media` **UUID** plus `content_type` (the format: `image/jpeg`, `image/png`, `image/webp`).
 * **Edge Cases:**
   * No property images available at submission time: API returns `400 Bad Request` `{ "At least one image is required" }`.
   * Large number of images (images > 50): API returns `400 Bad Request` `{ "message": "Maximum number of media files is 50" }`.

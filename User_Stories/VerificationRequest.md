@@ -2,15 +2,14 @@
 
 ## Customer
 - As a Customer (property owner), **I want** to submit my property advertisement for verification **so that** Shaqqa Admin/Staff can review it before it becomes public.
-- As a Customer, **I want** to optionally attach ownership documents to my verification request **so that** reviewers can verify the authenticity of my property.
 - As a Customer, **I want** to receive the review decision (approved / needs edits / rejected) with the reviewer's notes **so that** I know what to fix and resubmit.
 
 ## Broker
 - As a Broker, **I want** my verification requests to be marked as high priority **so that** my advertisements are fast-tracked and published quickly.
-- As a Broker, **I want** to submit my property advertisement for verification without ownership documents **so that** I can publish all properties available from my real estate office.
+- As a Broker, **I want** to submit my property advertisement for verification **so that** I can publish all properties available from my real estate office.
 
 ## Company Staff
-- As a Company Staff, **I want** my verification requests to be treated like a Broker's (`HIGH` priority, no ownership documents) **so that** my company advertisements are published quickly.
+- As a Company Staff, **I want** my verification requests to be treated like a Broker's (`HIGH` priority) **so that** my company advertisements are published quickly.
 
 ## Shaqqa Admin and Staff
 - As a Shaqqa Admin OR Shaqqa Staff, **I want** to review verification requests and approve, request edits, or reject them **so that** only valid advertisements become public (full stories in `users_doc/shaqqa-admin-staff.md`).
@@ -53,16 +52,6 @@
     * Updating a `PENDING` advertisement is allowed: the existing `PENDING` request is **hard-deleted** and a new one is created (replacement — no `409`).
     * The author does not respond to `NEEDS_EDIT` within 7 days: the request is set to `REJECTED` (and the `DRAFT` advertisement to `REJECTED`).
 
-## Feature: Upload Ownership Documents
-* **Acceptance Criteria:**
-    * Ownership documents are **optional**.
-    * Only `CUSTOMER` requests can attach documents — `BROKER` and `COMPANY_STAFF` do not have this option.
-    * Documents are stored on the platform file system under `wwwroot/uploads/verification-requests/{id_verification_request}/` and their relative URLs are saved in `documents_url`.
-    * Uploading documents does **not** change the request status (the reviewer decides manually).
-* **Edge Cases:**
-    * Unsupported file format or file exceeding the allowed size: `400 Bad Request` with a clear message.
-    * A `BROKER`/`COMPANY_STAFF` (or a non-owner) attempts to upload documents: `403 Forbidden`.
-
 ## Feature: Review Outcome (Admin side)
 * **Acceptance Criteria:**
     * `APPROVED`: the advertisement version becomes `ACTIVE`; for `UPDATE`, the superseded version becomes `DELETED` and `publish_date` is refreshed on the new version.
@@ -83,10 +72,7 @@ achived through add advertisement endpoint in `PropertyListing.md`.
 ## 2. Resubmit Advertisement after NEEDS_EDIT
 achived through update advertisement endpoint in `PropertyListing.md`.
 
-## 3. Upload Ownership Documents
-achieved through add or update advertisement endpoint directly using `multipart/form-data`.
-
-## 4. Get My Verification Requests
+## 3. Get My Verification Requests
 * **Endpoint:** `GET /api/v1/verification-requests`
 * **Description:** Returns the authenticated user's verification requests with their current status.
 * **Headers:** `Authorization: Bearer <User_Token>`
@@ -123,7 +109,6 @@ achieved through add or update advertisement endpoint directly using `multipart/
 * **`request_type`** (ENUM): `PUBLISH`, `UPDATE`. Whether the request verifies a new publication or a replacement version of an `ACTIVE` advertisement.
 * **`requester_role`** (ENUM): `CUSTOMER`, `BROKER`, `COMPANY_STAFF`. **Derived** from User table.
 * **`priority`** (ENUM): `HIGH`, `NORMAL`. Derived from `requester_role` (`HIGH` for `BROKER`/`COMPANY_STAFF`, `NORMAL` for `CUSTOMER`).
-* **`documents_url`** (TEXT[], NULLABLE): Relative URLs of uploaded ownership documents (customers only, optional).
 * **`status`** (ENUM): `PENDING`, `APPROVED`, `NEEDS_EDIT`, `REJECTED`.
 * **`reviewed_by`** (FK -> `User.id_user`, NULLABLE): The Shaqqa Admin/Staff member who reviewed the request.
 * **`admin_note`** (TEXT, NULLABLE): The reviewer's note (mandatory for `REJECTED` and `NEEDS_EDIT`).

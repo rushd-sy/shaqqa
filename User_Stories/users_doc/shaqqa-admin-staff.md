@@ -164,7 +164,6 @@
       "requester_role": "BROKER",
       "priority": "HIGH",
       "status": "PENDING",
-      "documents_url": [],
       "created_at": "2026-08-09T08:00:00Z"
     }
   ]
