@@ -26,6 +26,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<RegisterWithOtpDtoValidator>();
         services.AddHostedService<PhoneVerificationCleanupService>();
         services.AddScoped<ISmsService, FakeSmsService>();
+        services.AddHttpClient<ITelegramService, TelegramService>();
 
         return services;
     }

@@ -6,19 +6,23 @@ public static class PhoneNumberExtensions
 {
     public static string ToCanonicalE164(this string phoneNumber)
     {
-        if (string.IsNullOrWhiteSpace(phoneNumber))
-            return string.Empty;
+        if(string.IsNullOrWhiteSpace(phoneNumber)) return string.Empty;
 
-        var cleaned = Regex.Replace(phoneNumber, @"[^\d+]", "");
+        var cleaned = phoneNumber.Trim().Replace(" ", "").Replace("-", "");
+
+        if (cleaned.StartsWith("09"))
+        {
+            return "+963" + cleaned.Substring(1);
+        }
 
         if (cleaned.StartsWith("00"))
         {
-            cleaned = "+" + cleaned[2..];
+            return "+" + cleaned.Substring(2);
         }
 
         if (!cleaned.StartsWith("+"))
         {
-            cleaned = "+" + cleaned;
+            return "+" + cleaned;
         }
 
         return cleaned;

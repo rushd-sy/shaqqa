@@ -19,19 +19,22 @@ public class IdentityService : IIdentityService
     private readonly AppDbContext _context;
     private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
     private readonly ISmsService _smsService;
+    private readonly ITelegramService _telegramService;
 
     public IdentityService(
         UserManager<ApplicationUser> userManager,
         ITokenProvider tokenProvider,
         AppDbContext context,
         IPasswordHasher<ApplicationUser> passwordHasher,
-        ISmsService smsService)
+        ISmsService smsService,
+        ITelegramService telegramService)
     {
         _userManager = userManager;
         _tokenProvider = tokenProvider;
         _context = context;
         _passwordHasher = passwordHasher;
         _smsService = smsService;
+        _telegramService = telegramService;
     }
 
     public async Task<Result<bool>> SendOtpAsync(SendOtpDto dto, CancellationToken cancellationToken = default)
@@ -39,45 +42,36 @@ public class IdentityService : IIdentityService
         var phoneNumber = dto.PhoneNumber.ToCanonicalE164();
         var userExists = await _userManager.Users
         .AnyAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
-
         if (userExists)
         {
             return true;
         }
-        var lastVerification = await _context.PhoneVerifications
-        .Where(pv => pv.PhoneNumber == phoneNumber)
-        .OrderByDescending(pv => pv.ExpiresAtUtc)
-        .FirstOrDefaultAsync(cancellationToken);
 
-        if (lastVerification != null && lastVerification.ExpiresAtUtc.AddMinutes(-4) > DateTimeOffset.UtcNow)
+        var verification = await _context.PhoneVerifications
+        .FirstOrDefaultAsync(pv => pv.PhoneNumber == phoneNumber, cancellationToken);
+        if (verification == null || string.IsNullOrEmpty(verification.TelegramChatId))
         {
-            return Error.Failure("OTP.RateLimit", "Please wait a minute before requesting a new code.");
+            return Error.Validation("Telegram.NotFound", "Please start a conversation with the Telegram bot first.");
         }
-
-        var activeVerifications = await _context.PhoneVerifications
-        .Where(pv => pv.PhoneNumber == phoneNumber && !pv.IsUsed)
-        .ToListAsync(cancellationToken);
-
-        foreach (var activeVerification in activeVerifications)
+        if (verification.CreatedAtUtc.AddMinutes(1) > DateTimeOffset.UtcNow)
         {
-            activeVerification.IsUsed = true;
+            return Error.Validation("OTP.RateLimit", "Please wait before requesting another OTP.");
         }
         var randomOtpCode = GenerateSecureOtp();
         string hashedOtp = _passwordHasher.HashPassword(null!, randomOtpCode);
-
-        var verification = new PhoneVerification(Guid.NewGuid())
+        verification.CreatedAtUtc = DateTimeOffset.UtcNow;
+        verification.VerificationCode = hashedOtp;
+        verification.ExpiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(5);
+        verification.IsUsed = false;
+        verification.FailedAttempts = 0;
+        string userTelegramChatId = verification.TelegramChatId;
+        bool isSent = await _telegramService.SendOtpAsync(userTelegramChatId, randomOtpCode);
+        if (!isSent)
         {
-            PhoneNumber = phoneNumber,
-            VerificationCode = hashedOtp,
-            ExpiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(5),
-            IsUsed = false
-        };
-
-        await _context.PhoneVerifications.AddAsync(verification, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-
+            return Error.Failure("Telegram.SendFailed", "Failed to send OTP code via Telegram.");
+        }
         await _smsService.SendSmsAsync(phoneNumber, $"Your OTP code is: {randomOtpCode}", cancellationToken);
-
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
@@ -111,26 +105,24 @@ public class IdentityService : IIdentityService
         }
         if (latestVerification.FailedAttempts >= 5)
         {
-            latestVerification.IsUsed = true;
-            await _context.SaveChangesAsync(cancellationToken);
             return Error.Validation("OTP.MaxAttemptsExceeded", "Too many failed attempts. Please request a new code.");
         }
         var verificationResult = _passwordHasher.VerifyHashedPassword(null!, latestVerification.VerificationCode, dto.VerificationCode);
-        if (verificationResult != PasswordVerificationResult.Success)
+        if (verificationResult == PasswordVerificationResult.Failed)
         {
             latestVerification.FailedAttempts++;
             if (latestVerification.FailedAttempts >= 5)
             {
-                latestVerification.IsUsed = true;
+                return Error.Validation("OTP.MaxAttemptsExceeded", "Too many failed attempts. Please request a new code.");
             }
 
-            await _context.SaveChangesAsync(cancellationToken);
             return Error.Validation("OTP.InvalidCode", "Invalid verification code.");
         }
         using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
         try
         {
             latestVerification.IsUsed = true;
+            latestVerification.FailedAttempts = 0;
             latestVerification.LastModifiedUtc = DateTime.UtcNow;
             var appUser = new ApplicationUser
             {
@@ -153,6 +145,7 @@ public class IdentityService : IIdentityService
             {
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
+                CreatedAtUtc = DateTime.UtcNow,
                 IsActive = true
             };
             var roles = await _userManager.GetRolesAsync(appUser);

@@ -13,5 +13,6 @@ namespace RealEstate.Domain.PhoneVerifications
         public bool IsExpired(DateTimeOffset now) => now > ExpiresAtUtc;
         public bool IsUsed { get; set; } = false;
         public int FailedAttempts { get; set; } = 0;
+        public string? TelegramChatId { get; set; }
     }
 }
