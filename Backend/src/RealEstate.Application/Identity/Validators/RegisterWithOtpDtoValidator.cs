@@ -9,7 +9,7 @@ public class RegisterWithOtpDtoValidator : AbstractValidator<RegisterWithOtpDto>
     {
         RuleFor(x => x.PhoneNumber)
     .NotEmpty().WithMessage("Phone number is required.")
-    .Matches(@"^\+?[0-9]{10,15}$").WithMessage("Phone number format is invalid.");
+    .Matches(@"^\+?[0-9]{10,15}$").WithMessage("Invalid phone number format. It must follow E.164 format (e.g., +9639xxxxxxx).");
 
         RuleFor(x => x.VerificationCode)
     .NotEmpty().WithMessage("Verification code (OTP) is required.")

@@ -12,7 +12,7 @@ namespace RealEstate.Infrastructure.Identity
             _httpClient = httpClient;
             _botToken = configuration["TelegramSettings:BotToken"] ?? throw new ArgumentNullException("TelegramBotToken is not configured.");
         }
-        public async Task<bool> SendOtpAsync(string chatId, string otpCode)
+        public async Task<bool> SendOtpAsync(string chatId, string otpCode, CancellationToken cancellationToken = default)
         {
             var url = $"https://api.telegram.org/bot{_botToken}/sendMessage";
 
@@ -23,8 +23,19 @@ namespace RealEstate.Infrastructure.Identity
                 parse_mode = "Markdown"
             };
 
-            var response = await _httpClient.PostAsJsonAsync(url, payload);
-            return response.IsSuccessStatusCode;
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(url, payload, cancellationToken);
+                return response.IsSuccessStatusCode;
+            }
+            catch (TaskCanceledException)
+            {
+                return false;
+            }
+            catch (HttpRequestException)
+            {
+                return false;
+            }
         }
 
 

@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Humanizer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Application.Common.Extensions;
 using RealEstate.Application.Common.Interfaces;
+using RealEstate.Application.DTOs;
 using RealEstate.Application.Identity;
 using RealEstate.Application.Identity.DTOs;
 using RealEstate.Domain.Common.Results;
@@ -40,12 +42,6 @@ public class IdentityService : IIdentityService
     public async Task<Result<bool>> SendOtpAsync(SendOtpDto dto, CancellationToken cancellationToken = default)
     {
         var phoneNumber = dto.PhoneNumber.ToCanonicalE164();
-        var userExists = await _userManager.Users
-        .AnyAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
-        if (userExists)
-        {
-            return true;
-        }
 
         var verification = await _context.PhoneVerifications
         .FirstOrDefaultAsync(pv => pv.PhoneNumber == phoneNumber, cancellationToken);
@@ -53,7 +49,7 @@ public class IdentityService : IIdentityService
         {
             return Error.Validation("Telegram.NotFound", "Please start a conversation with the Telegram bot first.");
         }
-        if (verification.CreatedAtUtc.AddMinutes(1) > DateTimeOffset.UtcNow)
+        if (!string.IsNullOrEmpty(verification.VerificationCode) && verification.CreatedAtUtc.AddMinutes(1) > DateTimeOffset.UtcNow)
         {
             return Error.Validation("OTP.RateLimit", "Please wait before requesting another OTP.");
         }
@@ -90,34 +86,17 @@ public class IdentityService : IIdentityService
         .Where(pv => pv.PhoneNumber == phoneNumber)
         .OrderByDescending(pv => pv.CreatedAtUtc)
         .FirstOrDefaultAsync(cancellationToken);
-        if(latestVerification == null)
-    {
+        if (latestVerification == null)
+        {
             return Error.Validation("OTP.NotFound", "No verification request found for this number.");
         }
-        if (latestVerification.IsUsed)
-        {
-            return Error.Validation("OTP.AlreadyUsed", "This OTP has already been used.");
-        }
-        var now = DateTimeOffset.UtcNow;
-        if (latestVerification.IsExpired(now))
-        {
-            return Error.Validation("OTP.Expired", "The verification code has expired.");
-        }
-        if (latestVerification.FailedAttempts >= 5)
-        {
-            return Error.Validation("OTP.MaxAttemptsExceeded", "Too many failed attempts. Please request a new code.");
-        }
-        var verificationResult = _passwordHasher.VerifyHashedPassword(null!, latestVerification.VerificationCode, dto.VerificationCode);
-        if (verificationResult == PasswordVerificationResult.Failed)
-        {
-            latestVerification.FailedAttempts++;
-            if (latestVerification.FailedAttempts >= 5)
-            {
-                return Error.Validation("OTP.MaxAttemptsExceeded", "Too many failed attempts. Please request a new code.");
-            }
+        var validationResult = await ValidateOtpAsync(latestVerification, dto.VerificationCode, cancellationToken);
 
-            return Error.Validation("OTP.InvalidCode", "Invalid verification code.");
+        if (validationResult.IsError)
+        {
+            return validationResult.Errors;
         }
+
         using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
         try
         {
@@ -171,11 +150,90 @@ public class IdentityService : IIdentityService
         {
             await transaction.RollbackAsync(cancellationToken);
             throw;
-        }  
+        }
     }
 
-    public string GenerateSecureOtp()
+    public async Task<Result<TokenResponse>> LoginWithOtpAsync(LoginWithOtpDto dto,CancellationToken cancellationToken = default)
+    {
+        var canonicalPhone = dto.PhoneNumber.ToCanonicalE164();
+
+        var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == canonicalPhone, cancellationToken);
+
+        if (user == null)
+        {
+            return Error.NotFound("User.NotFound", "No account found with this phone number.");
+        }
+
+        if (!user.IsActive)
+        {
+            return Error.Validation("Account.Suspended", "Your account has been suspended.");
+        }
+
+        var verification = await _context.PhoneVerifications
+            .FirstOrDefaultAsync(pv => pv.PhoneNumber == canonicalPhone, cancellationToken);
+        if (verification == null)
+        {
+            return Error.Validation("OTP.NotFound", "No verification request found for this number.");
+        }
+
+        var validationResult = await ValidateOtpAsync(verification, dto.VerificationCode, cancellationToken);
+
+        if (validationResult.IsError)
+        {
+            return validationResult.Errors;
+        }
+
+        verification.IsUsed = true;
+        verification.FailedAttempts = 0;
+        verification.LastModifiedUtc = DateTime.UtcNow;
+        var roles = await _userManager.GetRolesAsync(user);
+        var userDto = new AppUserDto(user.Id, user.PhoneNumber!, roles.ToList());
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var tokenResult = await _tokenProvider.GenerateJwtTokenAsync(userDto, cancellationToken);
+        if (tokenResult.IsError)
+        {
+            return tokenResult.Errors;
+        }
+
+        return tokenResult.Value;
+    }
+
+    private string GenerateSecureOtp()
     {
         return RandomNumberGenerator.GetInt32(100000, 1_000_000).ToString();
+    }
+    private async Task<Result<bool>> ValidateOtpAsync(PhoneVerification verification, string providedCode, CancellationToken cancellationToken)
+    {
+        
+
+        if (verification.IsUsed)
+        {
+            return Error.Validation("OTP.AlreadyUsed", "This OTP has already been used.");
+        }
+
+        if (verification.IsExpired(DateTimeOffset.UtcNow))
+        {
+            return Error.Validation("OTP.Expired", "The verification code has expired.");
+        }
+
+        if (verification.FailedAttempts >= 5)
+        {
+            return Error.Validation("OTP.MaxAttemptsExceeded", "Too many failed attempts. Please request a new code.");
+        }
+
+        var verificationResult = _passwordHasher.VerifyHashedPassword(null!, verification.VerificationCode, providedCode);
+        if (verificationResult == PasswordVerificationResult.Failed)
+        {
+            verification.FailedAttempts++;
+            if (verification.FailedAttempts >= 5)
+            {
+                return Error.Validation("OTP.MaxAttemptsExceeded", "Too many failed attempts. Please request a new code.");
+            }
+
+            return Error.Validation("OTP.InvalidCode", "Invalid verification code.");
+        }
+
+        return true;
     }
 }
