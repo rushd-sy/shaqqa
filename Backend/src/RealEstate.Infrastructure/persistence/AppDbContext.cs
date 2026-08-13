@@ -17,6 +17,7 @@ using RealEstate.Domain.Users;
 using RealEstate.Domain.Users.Notifications;
 using RealEstate.Domain.VerificationRequests;
 using RealEstate.Infrastructure.Identity;
+using RealEstate.Domain.PhoneVerifications;
 
 namespace RealEstate.Infrastructure.Persistence
 {
@@ -30,6 +31,7 @@ namespace RealEstate.Infrastructure.Persistence
         public DbSet<Favorite> Favorites => Set<Favorite>();
         public DbSet<VerificationRequest> VerificationRequests => Set<VerificationRequest>();
         public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<PhoneVerification> PhoneVerifications => Set<PhoneVerification>();
         public DbSet<Company> Companies => Set<Company>();
         public DbSet<Location> Locations => Set<Location>();
         public DbSet<Amenity> Amenities => Set<Amenity>();
@@ -40,7 +42,6 @@ namespace RealEstate.Infrastructure.Persistence
         public DbSet<History> Histories => Set<History>();
         public DbSet<Reason> Reasons => Set<Reason>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
