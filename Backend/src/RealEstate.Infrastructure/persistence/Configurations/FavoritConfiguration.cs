@@ -11,6 +11,10 @@ public class FavoriteConfiguration : IEntityTypeConfiguration<Favorite>
         builder.ToTable("Favorites");
         builder.HasKey(f => f.Id);
 
+        builder.Property(f => f.Id).ValueGeneratedOnAdd();
+        builder.Property(f => f.PublicId).IsRequired();
+        builder.HasIndex(f => f.PublicId).IsUnique();
+
         builder.HasOne(f => f.User)
             .WithMany(u => u.Favorites)
             .HasForeignKey(f => f.UserId)

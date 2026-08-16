@@ -11,8 +11,16 @@ public class AdvertisementConfiguration : IEntityTypeConfiguration<Advertisement
         builder.ToTable("Advertisements");
         builder.HasKey(a => a.Id);
 
+        builder.Property(a => a.Id).ValueGeneratedOnAdd();
+        builder.Property(a => a.PublicId).IsRequired();
+        builder.HasIndex(a => a.PublicId).IsUnique();
+
+        builder.Property(a => a.Title).IsRequired().HasMaxLength(255);
+        builder.Property(a => a.ContactInfo).IsRequired().HasMaxLength(100);
         builder.Property(a => a.Price).HasPrecision(14, 2);
-        builder.Property(a => a.Description).IsRequired();
+        builder.Property(a => a.AreaValue).HasPrecision(14, 2);
+        builder.Property(a => a.ContractType).IsRequired();
+        builder.Property(a => a.Status).IsRequired();
 
         builder.HasOne(a => a.User)
             .WithMany(u => u.Advertisements)
@@ -24,6 +32,12 @@ public class AdvertisementConfiguration : IEntityTypeConfiguration<Advertisement
             .HasForeignKey(a => a.PropertyId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(a => a.IsListed);
+        builder.HasOne(a => a.SupersededAdvertisement)
+            .WithMany()
+            .HasForeignKey(a => a.SupersededAdvertisementId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(a => a.Status);
+        builder.HasIndex(a => a.PublishDate);
     }
 }

@@ -4,11 +4,10 @@ using RealEstate.Domain.Properties;
 
 namespace RealEstate.Domain.PropertyAmenities;
 
-public class PropertyAmenity : AuditableEntity
+public class PropertyAmenity : InternalEntity
 {
-    public PropertyAmenity(Guid id) : base(id) { }
-    public Guid PropertyId { get; set; }
-    public Guid AmenityId { get; set; }
+    public int PropertyId { get; set; }
+    public int AmenityId { get; set; }
 
     public Property Property { get; set; } = null!;
     public Amenity Amenity { get; set; } = null!;
