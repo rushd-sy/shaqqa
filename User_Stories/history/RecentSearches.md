@@ -56,14 +56,14 @@
 {
   "data": [
     {
-      "searchQueryId": 231,
+      "search_query_id": "7f8192a4-d6e7-f809-1b2c-00000000000d",
       "query": "al-furqan",
-      "searchedAt": "2026-08-03T10:30:00Z"
+      "searched_at": "2026-08-03T10:30:00Z"
     },
     {
-      "searchQueryId": 218,
+      "search_query_id": "8f92a3b5-e7f8-09a1-2b3c-00000000000e",
       "query": "shahbaa",
-      "searchedAt": "2026-08-01T15:45:12Z"
+      "searched_at": "2026-08-01T15:45:12Z"
     }
   ]
 }
@@ -75,7 +75,7 @@
 * **Endpoint:** DELETE /api/user/recent-searches/{searchQueryId}
 * **Description:** removes a single Recent Search entry (keyword)
 * **Path Parameters:**
-  * `searchQueryId` (integer, required): The unique ID of the Recent Search entry.
+  * `searchQueryId` (UUID v7, required): The `PublicId` of the Recent Search entry.
 * **Headers:** `Authorization: Bearer <User_Token>`
 * **Response (204 No Content):**
 * **Error Responses:**
@@ -84,11 +84,14 @@
 
 # 4. Database Schema (Entities & Attributes)
 
+> **ID strategy:** `SearchQuery` exposes `PublicId` (UUID v7, indexed, UNIQUE) as `search_query_id` in the response. The internal `Id` (INT, PK) is never exposed.
+
 ## 1. Table: `SearchQuery`
-* **`search_query_id`** (PK): Primary key.
-* **`user_id`** (FK): Identifier for the user.
-* **`query`** (NVARCHAR(255)): The raw text query entered by the user. Never stores filters.
-* **`searched_at`** (DATETIME): Timestamp when search was executed.
-* **Unique:** `UNIQUE(user_id, query)` — a repeated identical keyword is an upsert
-  (`MERGE ... ON (user_id, query) WHEN MATCHED THEN UPDATE SET searched_at = GETDATE()`), so the timestamp is
+* **`Id`** (PK, INT, IDENTITY): Internal identifier — **never exposed**.
+* **`PublicId`** (UUID v7, UNIQUE, INDEXED): Public identifier; exposed as `search_query_id` in the response.
+* **`UserId`** (FK -> `User.PublicId`, UUID): Public identifier of the user.
+* **`Query`** (NVARCHAR(255)): The raw text query entered by the user. Never stores filters.
+* **`SearchedAt`** (DATETIME): Timestamp when search was executed.
+* **Unique:** `UNIQUE(UserId, Query)` — a repeated identical keyword is an upsert
+  (`MERGE ... ON (UserId, Query) WHEN MATCHED THEN UPDATE SET SearchedAt = GETDATE()`), so the timestamp is
   refreshed instead of a duplicate-key error. The "keep last 10" eviction runs after the upsert.

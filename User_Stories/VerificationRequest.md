@@ -81,8 +81,9 @@ achived through update advertisement endpoint in `PropertyListing.md`.
 {
   "data": [
     {
-      "id_verification_request": "9a31d4e6-...-uuid",
-      "id_advertisement": "b7f0c8a2-...-uuid",
+      "verification_request_id": "9a31d4e6-4d5e-6f70-8192-000000000004",
+      "advertisement_id": "b7f0c8a2-3c4d-5e6f-7081-000000000003",
+      "user_id": "3a1c9e57-1a2b-4c3d-8e9f-000000000001",
       "request_type": "PUBLISH",
       "priority": "NORMAL",
       "status": "PENDING",
@@ -102,17 +103,20 @@ achived through update advertisement endpoint in `PropertyListing.md`.
 
 # 4. Database Schema (Entities & Attributes)
 
+> **ID strategy:** `VerificationRequest` exposes `PublicId` (UUID v7, indexed, UNIQUE) used in all endpoints and as the FK target. The internal `Id` (INT, PK) is never exposed.
+
 ## 1. Table: `VerificationRequest`
-* **`id_verification_request`** (PK, UUID): Unique identifier for the verification request.
-* **`id_advertisement`** (FK -> `Advertisement.id_advertisement`, UUID): The advertisement **version** being verified.
-* **`id_user`** (FK -> `User.id_user`, UUID): The user who submitted the request.
-* **`request_type`** (ENUM): `PUBLISH`, `UPDATE`. Whether the request verifies a new publication or a replacement version of an `ACTIVE` advertisement.
-* **`requester_role`** (ENUM): `CUSTOMER`, `BROKER`, `COMPANY_STAFF`. **Derived** from User table.
-* **`priority`** (ENUM): `HIGH`, `NORMAL`. Derived from `requester_role` (`HIGH` for `BROKER`/`COMPANY_STAFF`, `NORMAL` for `CUSTOMER`).
-* **`status`** (ENUM): `PENDING`, `APPROVED`, `NEEDS_EDIT`, `REJECTED`.
-* **`reviewed_by`** (FK -> `User.id_user`, NULLABLE): The Shaqqa Admin/Staff member who reviewed the request.
-* **`admin_note`** (TEXT, NULLABLE): The reviewer's note (mandatory for `REJECTED` and `NEEDS_EDIT`).
-* **`created_at`** (TIMESTAMP): Request creation time.
-* **`reviewed_at`** (TIMESTAMP, NULLABLE): Time of the last review action.
+* **`Id`** (PK, INT, IDENTITY): Internal identifier for the verification request — **never exposed**.
+* **`PublicId`** (UUID v7, UNIQUE, INDEXED): Public identifier for the verification request; exposed as `verification_request_id` in all endpoints and used as the FK target.
+* **`AdvertisementId`** (FK -> `Advertisement.PublicId`, UUID): Public identifier of the advertisement **version** being verified.
+* **`UserId`** (FK -> `User.PublicId`, UUID): Public identifier of the user who submitted the request.
+* **`RequestType`** (ENUM): `PUBLISH`, `UPDATE`. Whether the request verifies a new publication or a replacement version of an `ACTIVE` advertisement.
+* **`RequesterRole`** (ENUM): `CUSTOMER`, `BROKER`, `COMPANY_STAFF`. **Derived** from User table.
+* **`Priority`** (ENUM): `HIGH`, `NORMAL`. Derived from `requester_role` (`HIGH` for `BROKER`/`COMPANY_STAFF`, `NORMAL` for `CUSTOMER`).
+* **`Status`** (ENUM): `PENDING`, `APPROVED`, `NEEDS_EDIT`, `REJECTED`.
+* **`ReviewedBy`** (FK -> `User.PublicId`, NULLABLE): Public identifier of the Shaqqa Admin/Staff member who reviewed the request.
+* **`AdminNote`** (TEXT, NULLABLE): The reviewer's note (mandatory for `REJECTED` and `NEEDS_EDIT`).
+* **`CreatedAt`** (TIMESTAMP): Request creation time.
+* **`ReviewedAt`** (TIMESTAMP, NULLABLE): Time of the last review action.
 
 > The staged data of an `UPDATE` request lives in the new `Advertisement` row (see `PropertyListing.md`) — there is no `proposed_changes` JSON column. When a `PENDING` advertisement is updated, its previous `PENDING` verification request is **hard-deleted** (no `SUPERSEDED` status).

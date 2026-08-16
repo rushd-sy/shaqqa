@@ -65,16 +65,16 @@
   "totalPages": 5,
   "currentPage": 1,
   "pageSize": 10,
-  "data": [
+   "data": [
     {
-      "propertyId": 20,
+      "property_id": 20,
       "price": 100000,
       "area": { "value": 120, "unit": "SqM" },
       "location": { "latitude": 36.2021, "longitude": 37.1343, "address": "Aleppo, Syria", "city": "Aleppo" },
       "rooms": 3,
-      "estateType": "APARTMENT",
-      "contractType": "SALE",
-      "createdAt": "2026-07-28T09:00:00Z"
+      "estate_type": "APARTMENT",
+      "contract_type": "SALE",
+      "created_at": "2026-07-28T09:00:00Z"
     }
   ]
 }
@@ -86,18 +86,18 @@
 
 Refer to `PropertyDetails.md` for the full `Property` table definition (the `User` table is defined in `users_doc/all-users.md`), and `PropertyListing.md` for the `Advertisement` table. Filters and sorting operate on `Property`, joined with `Advertisement`:
 
-> **ID strategy:** `propertyId` in results is the internal `Property.id_property` (**INT**). The public-facing IDs (`Advertisement.id_advertisement`, `User.id_user`) are **UUID**.
+> **ID strategy:** `property_id` in results is the internal `Property.Id` (**INT**) — `Property` has no public id (see `PropertyDetails.md`). The public-facing identifiers (`Advertisement.PublicId`, `User.PublicId`) are **UUID v7**.
 
 | Query Parameter | Column |
 |---|---|
-| `minPrice` / `maxPrice` | `Property.price` |
-| `minArea` / `maxArea` | `Property.area_value` |
-| `minRooms` | `Property.number_of_rooms` |
-| `city` | `Property.city` |
-| `estateType` | `Property.property_type` |
-| `q` (free-text) | `Property.address`, `Property.city`, `Property.country`, `Advertisement.title` |
-| `contractType` | `Advertisement.contract_type` (`RENT`, `SALE`) |
-| `sortBy=date` | `Advertisement.publish_date` |
+| `minPrice` / `maxPrice` | `Property.Price` |
+| `minArea` / `maxArea` | `Property.AreaValue` |
+| `minRooms` | `Property.NumberOfRooms` |
+| `city` | `Property.City` |
+| `estateType` | `Property.PropertyType` |
+| `q` (free-text) | `Property.Address`, `Property.City`, `Property.Country`, `Advertisement.Title` |
+| `contractType` | `Advertisement.ContractType` (`RENT`, `SALE`) |
+| `sortBy=date` | `Advertisement.PublishDate` |
 
 Additionally, this feature relies on the `SearchQuery` and `RecentFilter` tables defined in
 `history/RecentSearches.md` and `history/RecentFilters.md`:

@@ -29,16 +29,16 @@
 # 3. API Endpoints
 
 ## 1. Get Advertisement Details (Records Visit Automatically)
-* **Endpoint:** GET /api/advertisements/{id_advertisement}
+* **Endpoint:** GET /api/v1/advertisements/{advertisementId}
 * **Description:** Displays the full advertisement (property details, media, description). As a side effect, the
   server automatically records a recent visit — no separate client request is required.
 * **Path Parameters:**
-  * `id_advertisement` (INT, required): The unique identifier of the advertisement.
+  * `advertisementId` (UUID v7, required): The `PublicId` of the advertisement.
 * **Headers:** `Authorization: Bearer <User_Token>` (Optional for public viewing)
 * **Note:** Refer to `PropertyListing.md` and `PropertyDetails.md` for the full response format. If the user is
   not authenticated, the advertisement still loads but the visit is not recorded.
 * **Error Responses:**
-  * `400 Bad Request`: Invalid `id_advertisement` (e.g., negative or zero).
+  * `400 Bad Request`: Invalid `advertisementId` (e.g., malformed UUID).
   * `404 Not Found`: Advertisement does not exist or is inactive/deleted. Nothing is recorded.
 
 ## 2. Get Recent Visits
@@ -50,12 +50,12 @@
 {
   "data": [
     {
-      "advertisementId": 20,
-      "viewedAt": "2026-08-03T10:30:00Z"
+      "advertisement_id": "b7f0c8a2-3c4d-5e6f-7081-000000000003",
+      "viewed_at": "2026-08-03T10:30:00Z"
     },
     {
-      "advertisementId": 14,
-      "viewedAt": "2026-08-01T15:45:12Z"
+      "advertisement_id": "f3e1a9c7-6f70-8192-a3b4-000000000010",
+      "viewed_at": "2026-08-01T15:45:12Z"
     }
   ]
 }
@@ -65,12 +65,14 @@
 
 # 4. Database Schema (Entities & Attributes)
 
+> **ID strategy:** `AdvertisementViews` is an internal join/audit table — its own identifier is **never exposed**, so it has **no `PublicId`** (only an internal `Id`). It references `User.PublicId` and `Advertisement.PublicId`.
+
 ## 1. Table: `AdvertisementViews`
-* **`advertisement_views_id`** (PK): Primary key.
-* **`user_id`** (FK): Identifier for the user.
-* **`advertisement_id`** (FK -> `Advertisement.id_advertisement`): Identifier for the advertisement.
-* **`viewed_at`** (DATETIME): Timestamp when the advertisement was viewed.
-* **Unique:** `UNIQUE(user_id, advertisement_id)` — a repeat visit is an upsert
-  (`MERGE ... ON (user_id, advertisement_id) WHEN MATCHED THEN UPDATE SET viewed_at = GETDATE()`), so the
+* **`Id`** (PK, INT, IDENTITY): Internal identifier — **never exposed**.
+* **`UserId`** (FK -> `User.PublicId`, UUID): Public identifier of the user.
+* **`AdvertisementId`** (FK -> `Advertisement.PublicId`, UUID): Public identifier of the advertisement.
+* **`ViewedAt`** (DATETIME): Timestamp when the advertisement was viewed.
+* **Unique:** `UNIQUE(UserId, AdvertisementId)` — a repeat visit is an upsert
+  (`MERGE ... ON (UserId, AdvertisementId) WHEN MATCHED THEN UPDATE SET ViewedAt = GETDATE()`), so the
   timestamp is refreshed instead of a duplicate-key error. This also guarantees that two rapid/concurrent
   visits still result in a single record. The "keep last 10" eviction runs after the upsert.

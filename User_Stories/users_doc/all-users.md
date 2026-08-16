@@ -29,7 +29,7 @@
 
 ## Feature: User Login (Returning Users)
 *   **Acceptance Criteria:**
-    *   Given a registered phone number and a valid OTP code, the system detects the user's role and returns a JWT access token containing `id_user`, `role`, `first_name`, `last_name`, and `id_company` (for `COMPANY_ADMIN`/`COMPANY_STAFF`), plus a refresh token.
+    *   Given a registered phone number and a valid OTP code, the system detects the user's role and returns a JWT access token containing `user_id`, `role`, `first_name`, `last_name`, and `company_id` (for `COMPANY_ADMIN`/`COMPANY_STAFF`), plus a refresh token.
     *   Given a non-existent phone number, the system returns 404 Not Found or generic 401 Unauthorized — no account is auto-created (registration is a separate flow).
     *   If `is_active` is FALSE for the user (or their parent company), the login fails with an account suspended error.
     *   OTPs are single-use: they are "burned" (deleted) immediately after successful verification to prevent replay attacks.
@@ -101,11 +101,11 @@
       "refreshToken": "eyJhbGciOiJIUzI1...",
       "expiresInSeconds": 900,
       "user": {
-        "id_user": 106,
+        "user_id": "3a1c9e57-1a2b-4c3d-8e9f-000000000001",
         "first_name": "John",
         "last_name": "Doe",
         "role": "CUSTOMER",
-        "id_company": null
+        "company_id": null
       }
     }
     ```
@@ -151,11 +151,11 @@
       "refreshToken": "eyJhbGciOiJIUzI1...",
       "expiresInSeconds": 900,
       "user": {
-        "id_user": 105,
+        "user_id": "3a1c9e57-1a2b-4c3d-8e9f-000000000001",
         "first_name": "John",
         "last_name": "Doe",
         "role": "COMPANY_STAFF",
-        "id_company": 12
+        "company_id": "9b2c1d44-2b3c-4d5e-6f70-000000000002"
       }
     }
     ```
@@ -203,41 +203,43 @@
 
 # 4. JWT Token Claims
 
-*   **All users:** `id_user`, `role`, `first_name`, `last_name`.
-*   **`COMPANY_ADMIN` / `COMPANY_STAFF` only (additional claims):** `id_company` (and any other company-related details described in their user stories).
+*   **All users:** `user_id`, `role`, `first_name`, `last_name`.
+*   **`COMPANY_ADMIN` / `COMPANY_STAFF` only (additional claims):** `company_id` (the `Company.PublicId`).
 
 # 5. Database Schema (Entities & Attributes)
 
+> **ID strategy:** `User` exposes `PublicId` (UUID v7, indexed, UNIQUE) as `user_id` in all endpoints / JWT claims and as the FK target. The internal `Id` (INT, PK) is never exposed. `Otp` and `Refresh_Token` are internal-auth tables whose own identifiers are never exposed, so they have **no `PublicId`** (only an internal `Id`).
+
 ## 1. Table: `User`
 Extended for authentication, standardizing roles, and linking to companies.
-*   **`id_user`** (PK, UUID/INT): Unique identifier for the user.
-*   **`id_company`** (FK -> `Company.id_company`, Nullable): Populated only for users with the role `COMPANY_ADMIN` and `COMPANY_STAFF`.
-*   **`username`** (VARCHAR, Unique): Unique identifier name (optional).
-*   **`phone`** (VARCHAR, Unique): Primary login identifier (with country code).
-*   **`first_name`** (VARCHAR, Nullable): User's first name. Set during the registration name step.
-*   **`last_name`** (VARCHAR, Nullable): User's last name. Set during the registration name step.
-*   **`role`** (ENUM): User role on the system, always `CUSTOMER` at registration and only changeable by a Shaqqa Admin. Values: `CUSTOMER`, `BROKER`, `COMPANY_ADMIN`, `COMPANY_STAFF`, `SHAQQA_ADMIN`, `SHAQQA_STAFF`.
-*   **`is_active`** (BOOLEAN): Default `TRUE`. Used by admins to ban or suspend users.
-*   **`is_verified`** (BOOLEAN): Default `FALSE`. Set to `TRUE` after the user verifies their phone number via registration OTP.
-*   **`created_at`** (TIMESTAMP): User registration timestamp.
+*   **`Id`** (PK, INT, IDENTITY): Internal identifier for the user — **never exposed**.
+*   **`PublicId`** (UUID v7, UNIQUE, INDEXED): Public identifier for the user; exposed as `user_id` in all endpoints / JWT claims and used as the FK target.
+*   **`CompanyId`** (FK -> `Company.PublicId`, UUID, Nullable): Public identifier of the affiliated company; populated only for users with the role `COMPANY_ADMIN` and `COMPANY_STAFF`.
+*   **`Username`** (VARCHAR, Unique): Unique identifier name (optional).
+*   **`Phone`** (VARCHAR, Unique): Primary login identifier (with country code).
+*   **`FirstName`** (VARCHAR, Nullable): User's first name. Set during the registration name step.
+*   **`LastName`** (VARCHAR, Nullable): User's last name. Set during the registration name step.
+*   **`Role`** (ENUM): User role on the system, always `CUSTOMER` at registration and only changeable by a Shaqqa Admin. Values: `CUSTOMER`, `BROKER`, `COMPANY_ADMIN`, `COMPANY_STAFF`, `SHAQQA_ADMIN`, `SHAQQA_STAFF`.
+*   **`IsActive`** (BOOLEAN): Default `TRUE`. Used by admins to ban or suspend users.
+*   **`IsVerified`** (BOOLEAN): Default `FALSE`. Set to `TRUE` after the user verifies their phone number via registration OTP.
+*   **`CreatedAt`** (TIMESTAMP): User registration timestamp.
 
 ## 2. Table: `Otp`
 Handles single-use OTP codes for both registration and login flows.
 Note: Can be replaced with Firebase.
-*   **`id_otp`** (PK, UUID/INT): Unique identifier for the OTP record.
-*   **`phone`** (VARCHAR): The phone number the OTP was sent to.
-*   **`code`** (VARCHAR): The hashed 6-digit OTP code.
-*   **`purpose`** (ENUM): Flow the OTP belongs to. Values: `REGISTRATION`, `LOGIN`.
-*   **`attempts`** (INT): Default `0`. Incremented on every wrong guess. Max allowed is 3 before invalidation.
-*   **`created_at`** (TIMESTAMP): OTP creation timestamp.
-*   **`expires_at`** (TIMESTAMP): Expiration time of the OTP.
-
+*   **`Id`** (PK, INT, IDENTITY): Internal identifier for the OTP record — **never exposed**.
+*   **`Phone`** (VARCHAR): The phone number the OTP was sent to.
+*   **`Code`** (VARCHAR): The hashed 6-digit OTP code.
+*   **`Purpose`** (ENUM): Flow the OTP belongs to. Values: `REGISTRATION`, `LOGIN`.
+*   **`Attempts`** (INT): Default `0`. Incremented on every wrong guess. Max allowed is 3 before invalidation.
+*   **`CreatedAt`** (TIMESTAMP): OTP creation timestamp.
+*   **`ExpiresAt`** (TIMESTAMP): Expiration time of the OTP.
 
 ## 3. Table: `Refresh_Token`
 Supports session persistence and refresh token rotation.
-*   **`id_token`** (PK, UUID/INT): Unique identifier for the refresh token.
-*   **`id_user`** (FK -> `User.id_user`): The user the token belongs to.
-*   **`token`** (VARCHAR): The hashed refresh token value.
-*   **`expires_at`** (TIMESTAMP): Expiration time of the refresh token.
-*   **`is_revoked`** (BOOLEAN): Set to `TRUE` on rotation or logout; old tokens are invalidated when a new pair is issued.
-*   **`created_at`** (TIMESTAMP): Token creation timestamp.
+*   **`Id`** (PK, INT, IDENTITY): Internal identifier for the refresh token — **never exposed**.
+*   **`UserId`** (FK -> `User.PublicId`, UUID): Public identifier of the user the token belongs to.
+*   **`Token`** (VARCHAR): The hashed refresh token value.
+*   **`ExpiresAt`** (TIMESTAMP): Expiration time of the refresh token.
+*   **`IsRevoked`** (BOOLEAN): Set to `TRUE` on rotation or logout; old tokens are invalidated when a new pair is issued.
+*   **`CreatedAt`** (TIMESTAMP): Token creation timestamp.

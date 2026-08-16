@@ -26,7 +26,7 @@
     ```json
     {
       "prior_experience": true,
-      "id_location": 205,
+      "id_location": "c5d6e7f8-09a1-2b3c-4d5e-000000000012",
       "request_notes": "I worked as a licensed broker in Aleppo for 3 years."
     }
     ```
@@ -34,7 +34,7 @@
     ```json
     {
       "message": "Broker request submitted for review.",
-      "request_id": 45
+      "request_id": "6f708193-c5d6-e7f8-0a1b-00000000000c"
     }
     ```
 *   **Error Responses:**
@@ -43,14 +43,17 @@
 
 # 4. Database Schema (Entities & Attributes)
 
+> **ID strategy:** `Broker_Request` exposes `PublicId` (UUID v7, indexed, UNIQUE) as `request_id` in the response / admin endpoints. The internal `Id` (INT, PK) is never exposed. `Location` is referenced but not defined in these documents; its public identifier (`Location.PublicId`) is the FK target for `IdLocation`.
+
 ## 3. Table: `Broker_Request`
 Handles the workflow of a `CUSTOMER` applying to become a `BROKER`.
-*   **`id_request`** (PK, UUID/INT): Unique identifier for the broker application.
-*   **`id_user`** (FK -> `User.id_user`): The customer submitting the request.
-*   **`prior_experience`** (BOOLEAN): Checkbox indicating whether the applicant previously worked as a broker. Default `FALSE`.
-*   **`id_location`** (FK -> `Location.id_location`, Nullable): Optional office location picked on the map; references the `Location` table (see property user stories).
-*   **`status`** (ENUM): The current state of the request. Values: `PENDING`, `APPROVED`, `REJECTED`.
-*   **`reviewed_by`** (FK -> `User.id_user`, Nullable): The Shaqqa Admin or Staff member who handled the request.
-*   **`request_notes`** (TEXT, Nullable): Optional free-text notes filled out by the customer.
-*   **`created_at`** (TIMESTAMP): Request creation date.
-*   **`updated_at`** (TIMESTAMP): Timestamp of the last status change.
+*   **`Id`** (PK, INT, IDENTITY): Internal identifier for the broker application — **never exposed**.
+*   **`PublicId`** (UUID v7, UNIQUE, INDEXED): Public identifier for the broker application; exposed as `request_id` in the response / admin endpoints.
+*   **`UserId`** (FK -> `User.PublicId`, UUID): Public identifier of the customer submitting the request.
+*   **`PriorExperience`** (BOOLEAN): Checkbox indicating whether the applicant previously worked as a broker. Default `FALSE`.
+*   **`IdLocation`** (FK -> `Location.PublicId`, UUID, Nullable): Public identifier of the optional office location picked on the map; references the `Location` table (see property user stories).
+*   **`Status`** (ENUM): The current state of the request. Values: `PENDING`, `APPROVED`, `REJECTED`.
+*   **`ReviewedBy`** (FK -> `User.PublicId`, UUID, Nullable): Public identifier of the Shaqqa Admin or Staff member who handled the request.
+*   **`RequestNotes`** (TEXT, Nullable): Optional free-text notes filled out by the customer.
+*   **`CreatedAt`** (TIMESTAMP): Request creation date.
+*   **`UpdatedAt`** (TIMESTAMP): Timestamp of the last status change.

@@ -71,17 +71,17 @@
 {
   "data": [
     {
-      "recentFilterId": 96,
-      "savedAt": "2026-08-03T11:00:00Z",
+      "recent_filter_id": "8f92a3b5-e7f8-09a1-2b3c-00000000000e",
+      "saved_at": "2026-08-03T11:00:00Z",
       "filters": {
-        "minPrice": 10000,
-        "maxPrice": 100000,
+        "min_price": 10000,
+        "max_price": 100000,
         "city": "Aleppo New",
-        "minRooms": 3,
-        "minArea": 80,
-        "maxArea": 200,
-        "estateType": "APARTMENT",
-        "contractType": "SALE"
+        "min_rooms": 3,
+        "min_area": 80,
+        "max_area": 200,
+        "estate_type": "APARTMENT",
+        "contract_type": "SALE"
       }
     }
   ]
@@ -94,7 +94,7 @@
 * **Endpoint:** DELETE /api/user/recent-filters/{recentFilterId}
 * **Description:** removes a single filter card from the user's "Recent Filters"
 * **Path Parameters:**
-  * `recentFilterId` (integer, required): The ID of the filter card.
+  * `recentFilterId` (UUID v7, required): The `PublicId` of the filter card.
 * **Headers:** `Authorization: Bearer <User_Token>`
 * **Response (204 No Content):**
 * **Error Responses:**
@@ -103,15 +103,18 @@
 
 # 4. Database Schema (Entities & Attributes)
 
+> **ID strategy:** `RecentFilter` exposes `PublicId` (UUID v7, indexed, UNIQUE) as `recent_filter_id` in the response. The internal `Id` (INT, PK) is never exposed.
+
 ## 1. Table: `RecentFilter`
-* **`recent_filter_id`** (PK): Primary key.
-* **`user_id`** (FK): Identifier for the user.
-* **`filters_json`** (NVARCHAR(MAX)): JSON payload containing the filter combination. Keys match the
+* **`Id`** (PK, INT, IDENTITY): Internal identifier — **never exposed**.
+* **`PublicId`** (UUID v7, UNIQUE, INDEXED): Public identifier; exposed as `recent_filter_id` in the response.
+* **`UserId`** (FK -> `User.PublicId`, UUID): Public identifier of the user.
+* **`FiltersJson`** (NVARCHAR(MAX)): JSON payload containing the filter combination. Keys match the
   search filter parameters in `searching-filtering.md`. Never contains the `q` text. Must always be written
   through schema validation (see Business Rules) to keep the column clean.
-* **`filters_hash`** (CHAR(64)): SHA-256 hash of the canonicalized `filters_json` (keys sorted alphabetically,
+* **`FiltersHash`** (CHAR(64)): SHA-256 hash of the canonicalized `FiltersJson` (keys sorted alphabetically,
   whitespace normalized). Uniqueness lives here because `NVARCHAR(MAX)` cannot be indexed.
-* **`saved_at`** (DATETIME): Timestamp when the filter combination was recorded.
-* **Unique:** `UNIQUE(user_id, filters_hash)` — an identical filter combination is an upsert
-  (`MERGE ... ON (user_id, filters_hash) WHEN MATCHED THEN UPDATE SET saved_at = GETDATE()`), so the
+* **`SavedAt`** (DATETIME): Timestamp when the filter combination was recorded.
+* **Unique:** `UNIQUE(UserId, FiltersHash)` — an identical filter combination is an upsert
+  (`MERGE ... ON (UserId, FiltersHash) WHEN MATCHED THEN UPDATE SET SavedAt = GETDATE()`), so the
   timestamp is refreshed instead of a duplicate-key error. The "keep last 10" eviction runs after the upsert.
