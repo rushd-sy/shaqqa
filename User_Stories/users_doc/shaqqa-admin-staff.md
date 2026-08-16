@@ -41,7 +41,7 @@
         *   `NEEDS_EDIT`: the advertisement version becomes `DRAFT` and the author is notified; for an `UPDATE` request the superseded version stays `ACTIVE` (live).
         *   `REJECTED`: the advertisement version becomes `REJECTED`; for an `UPDATE` request the superseded version stays `ACTIVE` (live).
         *   `REJECTED` and `NEEDS_EDIT`: `admin_note` is mandatory.
-    *   `reviewed_by` is set to the reviewer's `User.id_user` and `reviewed_at` is recorded on every action.
+    *   `reviewed_by` is set to the reviewer's `User.PublicId` and `reviewed_at` is recorded on every action.
     *   The full state mapping between `VerificationRequest.status` and `Advertisement.status` is defined in `VerificationRequest.md`.
 *   **Edge Cases:**
     *   Two admins review the same request simultaneously -> the first action is applied, the second admin sees the updated status.
@@ -51,10 +51,10 @@
 # 3. API Endpoints (Login & Roles)
 
 ## 1. Review Broker Request (Admin/Staff)
-*   **Endpoint:** `PUT /api/v1/admin/broker-requests/{id_request}`
+*   **Endpoint:** `PUT /api/v1/admin/broker-requests/{requestId}`
 *   **Description:** **Shaqqa Admin OR Shaqqa Staff** reviews and updates request status.
 *   **Path Parameters:**
-        *   `id_request` (integer, required): The unique ID of the broker request being reviewed (corresponds to the `request_id` returned in the creation step).
+        *   `requestId` (UUID v7, required): The `PublicId` of the broker request being reviewed (corresponds to the `request_id` returned in the creation step).
 *   **Headers:** `Authorization: Bearer <Shaqqa_Admin_or_Staff_Token>`
 *   **Request Body:**
     ```json
@@ -68,10 +68,10 @@
     {
       "message": "Status updated. User role is now BROKER."
       "data": {
-        "request_id": 45,
-        "user_id": 101,
+        "request_id": "6f708193-c5d6-e7f8-0a1b-00000000000c",
+        "user_id": "3a1c9e57-1a2b-4c3d-8e9f-000000000001",
         "status": "APPROVED",
-        "reviewed_by": 7, 
+        "reviewed_by": "7c4d2a91-6f70-8192-a3b4-000000000006",
         "updated_at": "2026-06-09T11:00:00Z"
       }
     }
@@ -80,7 +80,7 @@
     *    `400 Bad Request`: Invalid status value provided.
     *    `401 Unauthorized`: Missing or invalid token.
     *    `403 Forbidden`: User is not a Shaqqa Admin or Staff.
-    *    `404 Not Found`: No broker request found with the provided `id_request`.
+    *    `404 Not Found`: No broker request found with the provided `requestId`.
 
 ## 2. Check Phone Number Registration (Shaqqa Admin)
 *   **Endpoint:** `POST /api/v1/admin/staff/check`
@@ -136,7 +136,7 @@
     ```json
     {
       "message": "Shaqqa Staff member successfully registered and role updated to Shaqqa Staff.",
-      "user_id": 305
+      "user_id": "3a1c9e57-1a2b-4c3d-8e9f-000000000001"
     }
     ```
 *   **Error Responses:**
@@ -157,9 +157,9 @@
 {
   "data": [
     {
-      "id_verification_request": "9a31d4e6-...-uuid",
-      "id_advertisement": "f3e1a9c7-...-uuid",
-      "id_user": "3a1c9e57-...-uuid",
+      "verification_request_id": "9a31d4e6-4d5e-6f70-8192-000000000004",
+      "advertisement_id": "f3e1a9c7-6f70-8192-a3b4-000000000010",
+      "user_id": "3a1c9e57-1a2b-4c3d-8e9f-000000000001",
       "request_type": "PUBLISH",
       "requester_role": "BROKER",
       "priority": "HIGH",
@@ -174,10 +174,10 @@
     *   `403 Forbidden`: User is not a Shaqqa Admin or Staff.
 
 ## 5. Review Verification Request (Admin/Staff)
-*   **Endpoint:** `PUT /api/v1/admin/verification-requests/{id_verification_request}`
+*   **Endpoint:** `PUT /api/v1/admin/verification-requests/{verificationRequestId}`
 *   **Description:** **Shaqqa Admin OR Shaqqa Staff** reviews a verification request and updates its status. On `APPROVED`, the advertisement version becomes `ACTIVE` (and the superseded version of an `UPDATE` request becomes `DELETED`). On `NEEDS_EDIT`, the version becomes `DRAFT` and the author is notified. `REJECTED` and `NEEDS_EDIT` require an `admin_note`.
 *   **Path Parameters:**
-    *   `id_verification_request` (UUID, required): The unique identifier of the verification request.
+    *   `verificationRequestId` (UUID v7, required): The `PublicId` of the verification request.
 *   **Headers:** `Authorization: Bearer <Shaqqa_Admin_or_Staff_Token>`
 *   **Request Body:**
 ```json
@@ -191,10 +191,10 @@
 {
   "message": "Verification request updated. Advertisement is now ACTIVE.",
   "data": {
-    "id_verification_request": "9a31d4e6-...-uuid",
-    "id_advertisement": "f3e1a9c7-...-uuid",
+    "verification_request_id": "9a31d4e6-4d5e-6f70-8192-000000000004",
+    "advertisement_id": "f3e1a9c7-6f70-8192-a3b4-000000000010",
     "status": "APPROVED",
-    "reviewed_by": "7c4d2a91-...-uuid",
+    "reviewed_by": "7c4d2a91-6f70-8192-a3b4-000000000006",
     "admin_note": "Application details verified.",
     "reviewed_at": "2026-08-10T11:00:00Z"
   }
@@ -204,5 +204,5 @@
     *   `400 Bad Request`: Invalid status value, or missing `admin_note` for `NEEDS_EDIT`/`REJECTED`.
     *   `401 Unauthorized`: Missing or invalid token.
     *   `403 Forbidden`: User is not a Shaqqa Admin or Staff.
-    *   `404 Not Found`: No verification request found with the provided `id_verification_request`.
+    *   `404 Not Found`: No verification request found with the provided `verificationRequestId`.
     *   `409 Conflict`: The request is no longer `PENDING` (already reviewed by another admin).

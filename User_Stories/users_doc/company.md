@@ -15,7 +15,7 @@
 - As a company owner, I want to view the **badges** earned by my company and staff, so that I can track our reputation and credibility on the platform.
 - As a company owner, I want to access **admin settings** to toggle specific features (like profit tracking) on or off, so that I can customize the platform to fit my company's privacy and operational needs.
 - As a company owner, I want to track the profits from statistics, so that reduce external accounting software usage (like "الأمين"), or at least, reduce accounting efforts.
-- As a Company Admin, I want to create new user accounts assigned the `COMPANY_STAFF` role and automatically linked to my `id_company`, so that my employees can access our company features.
+- As a Company Admin, I want to create new user accounts assigned the `COMPANY_STAFF` role and automatically linked to my `company_id`, so that my employees can access our company features.
 
 ### Company Staff
 - As a company staff, I want to have company staff credintials, login on the system easily like any other user (using phone number), and start work with the company as employee, so that I start my job easily with the company on one place.
@@ -25,7 +25,7 @@
 
 ## **Feature: Adding Company Staff**
 *   **Acceptance Criteria:**
-    *   A `COMPANY_ADMIN` can submit staff details. The system creates a new user, sets role to `COMPANY_STAFF`, and assigns the admin's `id_company`.
+    *   A `COMPANY_ADMIN` can submit staff details. The system creates a new user, sets role to `COMPANY_STAFF`, and assigns the admin's `company_id` (the `Company.PublicId`).
 *   **Edge Cases:**
     *   The phone number provided for the new staff member is already registered as a `CUSTOMER` in the app. (System should either reject with "Phone number already exists" or offer a flow to invite/migrate the existing user to the company).
 
@@ -85,7 +85,7 @@
     ```json
     {
       "message": "Staff member successfully processed and linked to the company.",
-      "user_id": 208
+      "user_id": "3a1c9e57-1a2b-4c3d-8e9f-000000000001"
     }
     ```
 *   **Error Responses:**
@@ -96,11 +96,14 @@
 
 # 4. Database Schema (Entities & Attributes)
 
+> **ID strategy:** `Company` exposes `PublicId` (UUID v7, indexed, UNIQUE) as `company_id` in JWT claims / responses and as the FK target. The internal `Id` (INT, PK) is never exposed. `Location` is referenced but not defined in these documents; its public identifier (`Location.PublicId`) is used as the FK target for `IdLocation`.
+
 ## 1. Table: `Company`
 Extended to handle basic status for login/access control.
-*   **`id_company`** (PK, UUID/INT): Unique identifier for the company.
-*   **`name`** (VARCHAR): Main company contact name.
-*   **`phone_number`** (VARCHAR, Unique): Main company contact phone.
-*   **`id_location`** (FK -> `Location.id_location`, Nullable): Corporate office location reference.
-*   **`is_active`** (BOOLEAN): Default `TRUE`. If `FALSE`, all company staff under this company are prevented from logging in.
-*   **`created_at`** (TIMESTAMP): Creation date.
+*   **`Id`** (PK, INT, IDENTITY): Internal identifier for the company — **never exposed**.
+*   **`PublicId`** (UUID v7, UNIQUE, INDEXED): Public identifier for the company; exposed as `company_id` in JWT claims / responses and used as the FK target.
+*   **`Name`** (VARCHAR): Main company contact name.
+*   **`PhoneNumber`** (VARCHAR, Unique): Main company contact phone.
+*   **`IdLocation`** (FK -> `Location.PublicId`, UUID, Nullable): Public identifier of the corporate office location reference.
+*   **`IsActive`** (BOOLEAN): Default `TRUE`. If `FALSE`, all company staff under this company are prevented from logging in.
+*   **`CreatedAt`** (TIMESTAMP): Creation date.

@@ -47,7 +47,7 @@
   * Max media count defined (Max = 50).
   * Images are compressed upon upload (target size: < 500KB).
   * Allowed image formats: `JPEG`, `PNG`, `WebP`.
-  * Each image is stored as a shared `File` record (see `FileStorage.md`) — images are served **only** through `GET /api/v1/media/{id_media}`; the internal `stored_path` is never exposed, and APIs return the `id_media` **UUID** plus `content_type` (the format: `image/jpeg`, `image/png`, `image/webp`).
+  * Each image is stored as a shared `File` record (see `FileStorage.md`) — images are served **only** through `GET /api/v1/media/{mediaId}`; the internal `StoredPath` is never exposed, and APIs return the `id_media` **UUID** plus `content_type` (the format: `image/jpeg`, `image/png`, `image/webp`).
 * **Edge Cases:**
   * No property images available at submission time: API returns `400 Bad Request` `{ "At least one image is required" }`.
   * Large number of images (images > 50): API returns `400 Bad Request` `{ "message": "Maximum number of media files is 50" }`.
@@ -66,28 +66,31 @@
 
 > **Scope note:** This document defines the `Property` entity only. The `Media` and `Advertisement` tables are defined in `PropertyListing.md`. The `User` table is defined in `users_doc/all-users.md`. The `Property` entity has **no lifecycle status** — public visibility is governed entirely by the parent `Advertisement.status` (see `PropertyListing.md` and `VerificationRequest.md`). All API endpoints for property/advertisement operations live in `PropertyListing.md`.
 
+> **ID strategy:** `Property`, `Amenities`, and `PropertyAmenities` are **never addressed by a public identifier** — they are internal only. They therefore expose **no `PublicId`**; they use only an internal `Id` (INT, PK). Cross-references to `Property`/`Amenities` use their internal `Id`. (This is the explicit exception noted for `Property`.)
+
 ## 1. Table: `Property`
-* **`id_property`** (PK, INT): Property identifier.
-* **`property_type`** (ENUM): `APARTMENT`, `LAND`, `SHOP`, `VILLA`, `OFFICE`.
-* **`description`** (TEXT): Description of the property.
-* **`price`** (DECIMAL): Price of the property.
-* **`area_value`** (DECIMAL): Area numerical value.
-* **`area_unit`** (ENUM): Area unit (`SQM`, `HECTARE`).
-* **`number_of_rooms`** (INT): Number of rooms.
-* **`floor_number`** (INT): Floor number.
-* **`latitude`** (DOUBLE): Location latitude (-90 to 90).
-* **`longitude`** (DOUBLE): Location longitude (-180 to 180).
-* **`address`** (STRING): Structured address (e.g., "Aleppo, Syria").
-* **`city`** (STRING): Location city.
-* **`country`** (STRING): Location country.
-* **`legal_status`** (ENUM): `LEASEHOLD`, `FREEHOLD`, `COURT_REGISTERED`, `SHARED_OWNERSHIP`.
-* **`construction_date`** (DATETIME): Building construction date.
+* **`Id`** (PK, INT, IDENTITY): Property identifier — **never exposed** (the search feed returns it as the internal `property_id`; there is no public UUID for properties).
+* **`PropertyType`** (ENUM): `APARTMENT`, `LAND`, `SHOP`, `VILLA`, `OFFICE`.
+* **`Description`** (TEXT): Description of the property.
+* **`Price`** (DECIMAL): Price of the property.
+* **`AreaValue`** (DECIMAL): Area numerical value.
+* **`AreaUnit`** (ENUM): Area unit (`SQM`, `HECTARE`).
+* **`NumberOfRooms`** (INT): Number of rooms.
+* **`FloorNumber`** (INT): Floor number.
+* **`Latitude`** (DOUBLE): Location latitude (-90 to 90).
+* **`Longitude`** (DOUBLE): Location longitude (-180 to 180).
+* **`Address`** (STRING): Structured address (e.g., "Aleppo, Syria").
+* **`City`** (STRING): Location city.
+* **`Country`** (STRING): Location country.
+* **`LegalStatus`** (ENUM): `LEASEHOLD`, `FREEHOLD`, `COURT_REGISTERED`, `SHARED_OWNERSHIP`.
+* **`ConstructionDate`** (DATETIME): Building construction date.
 
 ## 2. Table: `Amenities`
-* **`amenity_id`** (PK, INT): Amenity identifier.
-* **`name`** (STRING): Name of the amenity.
-* **`description`** (STRING, NULLABLE): Description of the amenity.
+* **`Id`** (PK, INT, IDENTITY): Amenity identifier — **never exposed**.
+* **`Name`** (STRING): Name of the amenity.
+* **`Description`** (STRING, NULLABLE): Description of the amenity.
 
 ## 3. Table: `PropertyAmenities`
-* **`id_property`** (FK -> `Property.id_property`, INT): Associated property identifier.
-* **`amenity_id`** (FK -> `Amenities.amenity_id`, INT): Associated amenity identifier.
+* **`Id`** (PK, INT, IDENTITY): Internal junction identifier — **never exposed**.
+* **`PropertyId`** (FK -> `Property.Id`, INT): Associated property identifier (internal).
+* **`AmenityId`** (FK -> `Amenities.Id`, INT): Associated amenity identifier (internal).
