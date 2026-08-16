@@ -11,8 +11,13 @@ public class AmenityConfiguration : IEntityTypeConfiguration<Amenity>
         builder.ToTable("Amenities");
         builder.HasKey(a => a.Id);
 
-        builder.Property(a => a.Name).IsRequired().HasMaxLength(100);
-        builder.Property(a => a.IconUrl).HasMaxLength(500);
-        builder.Property(a => a.Description).HasMaxLength(500);
+        builder.Property(a => a.Id).ValueGeneratedOnAdd();
+        builder.Property(a => a.Name).IsRequired().HasMaxLength(255);
+        builder.Property(a => a.Description).HasMaxLength(1000);
+
+        builder.HasMany(a => a.PropertyAmenities)
+            .WithOne(pa => pa.Amenity)
+            .HasForeignKey(pa => pa.AmenityId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

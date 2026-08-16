@@ -125,109 +125,351 @@ namespace RealEstate.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Advertisements.Advertisement", b =>
+            modelBuilder.Entity("RealEstate.Domain.AdvertisementViews.AdvertisementView", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AdvertisementId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Description")
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ViewedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdvertisementId");
+
+                    b.HasIndex("UserId", "AdvertisementId")
+                        .IsUnique();
+
+                    b.ToTable("AdvertisementViews", (string)null);
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Advertisements.Advertisement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AreaValue")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("decimal(14,2)");
+
+                    b.Property<string>("ContactInfo")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<bool>("IsListed")
-                        .HasColumnType("bit");
+                    b.Property<int>("ContractType")
+                        .HasColumnType("int");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<decimal>("Price")
                         .HasPrecision(14, 2)
                         .HasColumnType("decimal(14,2)");
 
-                    b.Property<Guid>("PropertyId")
+                    b.Property<int>("PropertyId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("PublishedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("PublishDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SupersededAdvertisementId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsListed");
-
                     b.HasIndex("PropertyId");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("PublishDate");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("SupersededAdvertisementId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Advertisements", (string)null);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Amenities.Amenity", b =>
+            modelBuilder.Entity("RealEstate.Domain.Advertisements.Media", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AdvertisementId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FileId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsCover")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileId");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("AdvertisementId", "DisplayOrder");
+
+                    b.ToTable("Media", (string)null);
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.AgentBadges.AgentBadge", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("AgentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BadgeName")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasDefaultValue("Professional Agent");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("GrantedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("GrantedAtScore")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<Guid>("GrantedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("RevokedAtScore")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<Guid?>("RevokedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GrantedBy");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("RevokedBy");
+
+                    b.HasIndex("AgentId", "Status");
+
+                    b.ToTable("AgentBadges", (string)null);
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Amenities.Amenity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("IconUrl")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 
                     b.ToTable("Amenities", (string)null);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Companies.Company", b =>
+            modelBuilder.Entity("RealEstate.Domain.Bookings.BookingVisit", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("AppointmentDatetime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("AvailabilityId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("PropertyId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
+                    b.HasKey("Id");
 
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                    b.HasIndex("AvailabilityId");
+
+                    b.HasIndex("PropertyId");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "Status");
+
+                    b.ToTable("Booking_Visit", (string)null);
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Bookings.PropertyAvailability", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("EndTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsBooked")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PropertyId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("StartTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("PropertyId", "StartTime");
+
+                    b.ToTable("Property_Availability", (string)null);
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Companies.Company", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("IdLocation")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -239,125 +481,45 @@ namespace RealEstate.Infrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<Guid?>("PocUserId")
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PocUserId");
+                    b.HasIndex("IdLocation");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique();
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
 
                     b.ToTable("Companies", (string)null);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.DocumentTypes.DocumentType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AllowedExtensions")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("DocumentTypes", (string)null);
-                });
-
-            modelBuilder.Entity("RealEstate.Domain.Documents.Document", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("DocumentTypeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("DocumentableId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("DocumentableType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Filename")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DocumentTypeId");
-
-                    b.HasIndex("DocumentableType", "DocumentableId");
-
-                    b.ToTable("Documents", (string)null);
-                });
-
             modelBuilder.Entity("RealEstate.Domain.Favorites.Favorite", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AdvertisementId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AdvertisementId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                    b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("UserId")
@@ -366,47 +528,14 @@ namespace RealEstate.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AdvertisementId");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
 
                     b.HasIndex("UserId", "AdvertisementId")
                         .IsUnique();
 
                     b.ToTable("Favorites", (string)null);
-                });
-
-            modelBuilder.Entity("RealEstate.Domain.Histories.History", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AdvertisementId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("ViewedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AdvertisementId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Histories", (string)null);
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Identity.RefreshToken", b =>
@@ -454,32 +583,229 @@ namespace RealEstate.Infrastructure.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Locations.Location", b =>
+            modelBuilder.Entity("RealEstate.Domain.Locations.City", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CountryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("CountryId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Cities", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Damascus",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000001")
+                        },
+                        new
+                        {
+                            Id = -2,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Aleppo",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000002")
+                        },
+                        new
+                        {
+                            Id = -3,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Homs",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000003")
+                        },
+                        new
+                        {
+                            Id = -4,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Hama",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000004")
+                        },
+                        new
+                        {
+                            Id = -5,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Latakia",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000005")
+                        },
+                        new
+                        {
+                            Id = -6,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Tartus",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000006")
+                        },
+                        new
+                        {
+                            Id = -7,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Idlib",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000007")
+                        },
+                        new
+                        {
+                            Id = -8,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Raqqa",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000008")
+                        },
+                        new
+                        {
+                            Id = -9,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Deir ez-Zor",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000009")
+                        },
+                        new
+                        {
+                            Id = -10,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Al-Hasakah",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000010")
+                        },
+                        new
+                        {
+                            Id = -11,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Daraa",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000011")
+                        },
+                        new
+                        {
+                            Id = -12,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "As-Suwayda",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000012")
+                        },
+                        new
+                        {
+                            Id = -13,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Quneitra",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000013")
+                        },
+                        new
+                        {
+                            Id = -14,
+                            CountryId = -1,
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Rif Dimashq",
+                            PublicId = new Guid("22222222-2222-7222-8222-000000000014")
+                        });
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Locations.Country", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.ToTable("Countries", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            Code = "SY",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Syria",
+                            PublicId = new Guid("11111111-1111-7111-8111-111111111111")
+                        });
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Locations.Location", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<int?>("CityId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<int?>("CountryId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<decimal>("Latitude")
@@ -494,11 +820,25 @@ namespace RealEstate.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CityId");
+
+                    b.HasIndex("CountryId");
 
                     b.HasIndex("PlaceId")
                         .IsUnique()
                         .HasFilter("[PlaceId] IS NOT NULL");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
 
                     b.ToTable("Locations", (string)null);
                 });
@@ -552,18 +892,17 @@ namespace RealEstate.Infrastructure.Migrations
 
             modelBuilder.Entity("RealEstate.Domain.Properties.Property", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<float>("Area")
-                        .HasColumnType("real");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                    b.Property<DateTimeOffset>("ConstructionDate")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -572,23 +911,11 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Property<int?>("FloorNumber")
                         .HasColumnType("int");
 
-                    b.Property<int?>("LandType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<int>("LegalStatus")
                         .HasColumnType("int");
 
-                    b.Property<int>("ListingType")
+                    b.Property<int>("LocationId")
                         .HasColumnType("int");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("NumberOfRooms")
                         .HasColumnType("int");
@@ -596,47 +923,32 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Property<int>("PropertyType")
                         .HasColumnType("int");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UnitNumber")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LocationId", "FloorNumber", "UnitNumber");
+                    b.HasIndex("FloorNumber");
+
+                    b.HasIndex("LocationId")
+                        .IsUnique();
 
                     b.ToTable("Properties", (string)null);
                 });
 
             modelBuilder.Entity("RealEstate.Domain.PropertyAmenities.PropertyAmenity", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<Guid>("AmenityId")
-                        .HasColumnType("uniqueidentifier");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<int>("AmenityId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("PropertyId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("PropertyId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -684,48 +996,296 @@ namespace RealEstate.Infrastructure.Migrations
                     b.ToTable("Reasons", (string)null);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Reports.Report", b =>
+            modelBuilder.Entity("RealEstate.Domain.RecentFilters.RecentFilter", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("FiltersHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("FiltersJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AdvertisementId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                    b.Property<DateTimeOffset>("SavedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "FiltersHash")
+                        .IsUnique();
+
+                    b.ToTable("RecentFilters", (string)null);
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.RecentSearches.SearchQuery", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Query")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTimeOffset>("SearchedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "Query")
+                        .IsUnique();
+
+                    b.ToTable("SearchQueries", (string)null);
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Reports.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AdvertisementId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("ReasonId")
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ReportedByUserId")
+                    b.Property<int>("Reason")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ReasonId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AdvertisementId");
 
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
                     b.HasIndex("ReasonId");
 
-                    b.HasIndex("ReportedByUserId");
+                    b.HasIndex("UserId", "AdvertisementId")
+                        .IsUnique();
 
                     b.ToTable("Reports", (string)null);
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.StoredFiles.StoredFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StoredPath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("StoredPath")
+                        .IsUnique();
+
+                    b.ToTable("Files", (string)null);
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.TrustMetrics.TrustMetric", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActiveDaysLast30")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ActivityScore")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<Guid>("AgentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CalculatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("HasPhotoVerifiedByAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MonthlyPostsScore")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("PostsProfScore")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int>("PostsThisMonth")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ProfessionalPostsRatio")
+                        .HasPrecision(3, 2)
+                        .HasColumnType("decimal(3,2)");
+
+                    b.Property<decimal>("TrustScore")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgentId", "CalculatedAt");
+
+                    b.ToTable("TrustMetrics", (string)null);
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Users.BrokerRequests.BrokerRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("IdLocation")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("PriorExperience")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RequestNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid?>("ReviewedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdLocation");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("ReviewedBy");
+
+                    b.HasIndex("UserId", "Status");
+
+                    b.ToTable("Broker_Request", (string)null);
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Users.Notifications.Notification", b =>
@@ -756,8 +1316,8 @@ namespace RealEstate.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("SentAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
@@ -805,6 +1365,11 @@ namespace RealEstate.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int>("Role")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
@@ -814,42 +1379,57 @@ namespace RealEstate.Infrastructure.Migrations
 
             modelBuilder.Entity("RealEstate.Domain.VerificationRequests.VerificationRequest", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("AdvertisementId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PublicId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AdvertisementId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("RequestType")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                    b.Property<DateTimeOffset?>("ReviewedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ReviewedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("ReviewedByUserId")
+                    b.Property<Guid?>("ReviewedBy")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AdvertisementId");
+                    b.HasIndex("PublicId")
+                        .IsUnique();
 
-                    b.HasIndex("ReviewedByUserId");
+                    b.HasIndex("ReviewedBy");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("AdvertisementId", "Status");
 
                     b.ToTable("VerificationRequests", (string)null);
                 });
@@ -999,6 +1579,25 @@ namespace RealEstate.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("RealEstate.Domain.AdvertisementViews.AdvertisementView", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Advertisements.Advertisement", "Advertisement")
+                        .WithMany("AdvertisementViews")
+                        .HasForeignKey("AdvertisementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RealEstate.Domain.Users.User", "User")
+                        .WithMany("AdvertisementViews")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Advertisement");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("RealEstate.Domain.Advertisements.Advertisement", b =>
                 {
                     b.HasOne("RealEstate.Domain.Properties.Property", "Property")
@@ -1006,6 +1605,11 @@ namespace RealEstate.Infrastructure.Migrations
                         .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("RealEstate.Domain.Advertisements.Advertisement", "SupersededAdvertisement")
+                        .WithMany()
+                        .HasForeignKey("SupersededAdvertisementId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("RealEstate.Domain.Users.User", "User")
                         .WithMany("Advertisements")
@@ -1015,28 +1619,102 @@ namespace RealEstate.Infrastructure.Migrations
 
                     b.Navigation("Property");
 
+                    b.Navigation("SupersededAdvertisement");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Advertisements.Media", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Advertisements.Advertisement", "Advertisement")
+                        .WithMany("Media")
+                        .HasForeignKey("AdvertisementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RealEstate.Domain.StoredFiles.StoredFile", "File")
+                        .WithMany("Media")
+                        .HasForeignKey("FileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Advertisement");
+
+                    b.Navigation("File");
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.AgentBadges.AgentBadge", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Users.User", "Agent")
+                        .WithMany()
+                        .HasForeignKey("AgentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RealEstate.Domain.Users.User", "Grantor")
+                        .WithMany()
+                        .HasForeignKey("GrantedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RealEstate.Domain.Users.User", "Revoker")
+                        .WithMany()
+                        .HasForeignKey("RevokedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Agent");
+
+                    b.Navigation("Grantor");
+
+                    b.Navigation("Revoker");
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Bookings.BookingVisit", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Bookings.PropertyAvailability", "Availability")
+                        .WithMany("Bookings")
+                        .HasForeignKey("AvailabilityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RealEstate.Domain.Properties.Property", "Property")
+                        .WithMany()
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RealEstate.Domain.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Availability");
+
+                    b.Navigation("Property");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Bookings.PropertyAvailability", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Properties.Property", "Property")
+                        .WithMany()
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Property");
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Companies.Company", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Users.User", "PocUser")
-                        .WithMany()
-                        .HasForeignKey("PocUserId")
+                    b.HasOne("RealEstate.Domain.Locations.Location", "Location")
+                        .WithMany("Companies")
+                        .HasForeignKey("IdLocation")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("PocUser");
-                });
-
-            modelBuilder.Entity("RealEstate.Domain.Documents.Document", b =>
-                {
-                    b.HasOne("RealEstate.Domain.DocumentTypes.DocumentType", "DocumentType")
-                        .WithMany("Documents")
-                        .HasForeignKey("DocumentTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("DocumentType");
+                    b.Navigation("Location");
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Favorites.Favorite", b =>
@@ -1058,25 +1736,6 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Histories.History", b =>
-                {
-                    b.HasOne("RealEstate.Domain.Advertisements.Advertisement", "Advertisement")
-                        .WithMany("HistoryEntries")
-                        .HasForeignKey("AdvertisementId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RealEstate.Domain.Users.User", "User")
-                        .WithMany("HistoryEntries")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Advertisement");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("RealEstate.Domain.Identity.RefreshToken", b =>
                 {
                     b.HasOne("RealEstate.Domain.Users.User", "User")
@@ -1088,11 +1747,39 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("RealEstate.Domain.Locations.City", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Locations.Country", "Country")
+                        .WithMany("Cities")
+                        .HasForeignKey("CountryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Country");
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Locations.Location", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Locations.City", "City")
+                        .WithMany("Locations")
+                        .HasForeignKey("CityId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("RealEstate.Domain.Locations.Country", "Country")
+                        .WithMany("Locations")
+                        .HasForeignKey("CountryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("City");
+
+                    b.Navigation("Country");
+                });
+
             modelBuilder.Entity("RealEstate.Domain.Properties.Property", b =>
                 {
                     b.HasOne("RealEstate.Domain.Locations.Location", "Location")
-                        .WithMany("Properties")
-                        .HasForeignKey("LocationId")
+                        .WithOne("Property")
+                        .HasForeignKey("RealEstate.Domain.Properties.Property", "LocationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1118,6 +1805,28 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Navigation("Property");
                 });
 
+            modelBuilder.Entity("RealEstate.Domain.RecentFilters.RecentFilter", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.RecentSearches.SearchQuery", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("RealEstate.Domain.Reports.Report", b =>
                 {
                     b.HasOne("RealEstate.Domain.Advertisements.Advertisement", "Advertisement")
@@ -1126,23 +1835,55 @@ namespace RealEstate.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RealEstate.Domain.Reasons.Reason", "Reason")
+                    b.HasOne("RealEstate.Domain.Reasons.Reason", null)
                         .WithMany("Reports")
-                        .HasForeignKey("ReasonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("ReasonId");
 
-                    b.HasOne("RealEstate.Domain.Users.User", "ReportedByUser")
+                    b.HasOne("RealEstate.Domain.Users.User", "User")
                         .WithMany("Reports")
-                        .HasForeignKey("ReportedByUserId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Advertisement");
 
-                    b.Navigation("Reason");
+                    b.Navigation("User");
+                });
 
-                    b.Navigation("ReportedByUser");
+            modelBuilder.Entity("RealEstate.Domain.TrustMetrics.TrustMetric", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Users.User", "Agent")
+                        .WithMany()
+                        .HasForeignKey("AgentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Agent");
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Users.BrokerRequests.BrokerRequest", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Locations.Location", "Location")
+                        .WithMany("BrokerRequests")
+                        .HasForeignKey("IdLocation")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("RealEstate.Domain.Users.User", "ReviewedByUser")
+                        .WithMany()
+                        .HasForeignKey("ReviewedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("RealEstate.Domain.Users.User", "User")
+                        .WithMany("BrokerRequests")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Location");
+
+                    b.Navigation("ReviewedByUser");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Users.Notifications.Notification", b =>
@@ -1161,6 +1902,7 @@ namespace RealEstate.Infrastructure.Migrations
                     b.HasOne("RealEstate.Domain.Companies.Company", "Company")
                         .WithMany("Employees")
                         .HasForeignKey("CompanyId")
+                        .HasPrincipalKey("PublicId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("RealEstate.Infrastructure.Identity.ApplicationUser", null)
@@ -1182,19 +1924,29 @@ namespace RealEstate.Infrastructure.Migrations
 
                     b.HasOne("RealEstate.Domain.Users.User", "ReviewedByUser")
                         .WithMany("ProcessedVerificationRequests")
-                        .HasForeignKey("ReviewedByUserId")
+                        .HasForeignKey("ReviewedBy")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("RealEstate.Domain.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Advertisement");
 
                     b.Navigation("ReviewedByUser");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Advertisements.Advertisement", b =>
                 {
+                    b.Navigation("AdvertisementViews");
+
                     b.Navigation("Favorites");
 
-                    b.Navigation("HistoryEntries");
+                    b.Navigation("Media");
 
                     b.Navigation("Reports");
 
@@ -1206,19 +1958,35 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Navigation("PropertyAmenities");
                 });
 
+            modelBuilder.Entity("RealEstate.Domain.Bookings.PropertyAvailability", b =>
+                {
+                    b.Navigation("Bookings");
+                });
+
             modelBuilder.Entity("RealEstate.Domain.Companies.Company", b =>
                 {
                     b.Navigation("Employees");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.DocumentTypes.DocumentType", b =>
+            modelBuilder.Entity("RealEstate.Domain.Locations.City", b =>
                 {
-                    b.Navigation("Documents");
+                    b.Navigation("Locations");
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Locations.Country", b =>
+                {
+                    b.Navigation("Cities");
+
+                    b.Navigation("Locations");
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Locations.Location", b =>
                 {
-                    b.Navigation("Properties");
+                    b.Navigation("BrokerRequests");
+
+                    b.Navigation("Companies");
+
+                    b.Navigation("Property");
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Properties.Property", b =>
@@ -1233,13 +2001,20 @@ namespace RealEstate.Infrastructure.Migrations
                     b.Navigation("Reports");
                 });
 
+            modelBuilder.Entity("RealEstate.Domain.StoredFiles.StoredFile", b =>
+                {
+                    b.Navigation("Media");
+                });
+
             modelBuilder.Entity("RealEstate.Domain.Users.User", b =>
                 {
+                    b.Navigation("AdvertisementViews");
+
                     b.Navigation("Advertisements");
 
-                    b.Navigation("Favorites");
+                    b.Navigation("BrokerRequests");
 
-                    b.Navigation("HistoryEntries");
+                    b.Navigation("Favorites");
 
                     b.Navigation("Notifications");
 

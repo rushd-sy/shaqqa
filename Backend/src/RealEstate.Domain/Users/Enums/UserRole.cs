@@ -1,9 +1,12 @@
 namespace RealEstate.Domain.Users.Enums
 {
-    public static class UserRoles
+    public enum UserRole
     {
-        public const string Customer = "Customer";
-        public const string Broker = "Broker";
-        public const string Admin = "Admin";
+        Customer = 1,
+        Broker = 2,
+        CompanyAdmin = 3,
+        CompanyStaff = 4,
+        ShaqqaAdmin = 5,
+        ShaqqaStaff = 6
     }
 }

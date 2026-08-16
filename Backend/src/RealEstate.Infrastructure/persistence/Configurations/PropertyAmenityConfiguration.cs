@@ -11,6 +11,8 @@ public class PropertyAmenityConfiguration : IEntityTypeConfiguration<PropertyAme
         builder.ToTable("PropertyAmenities");
         builder.HasKey(pa => pa.Id);
 
+        builder.Property(pa => pa.Id).ValueGeneratedOnAdd();
+
         builder.HasOne(pa => pa.Property)
             .WithMany(p => p.PropertyAmenities)
             .HasForeignKey(pa => pa.PropertyId)

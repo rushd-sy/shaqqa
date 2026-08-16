@@ -11,19 +11,21 @@ namespace RealEstate.Infrastructure.Persistence.Configurations
             builder.ToTable("Properties");
             builder.HasKey(p => p.Id);
 
-            builder.Property(p => p.UnitNumber).HasMaxLength(50);
+            builder.Property(p => p.Id).ValueGeneratedOnAdd();
             builder.Property(p => p.PropertyType).IsRequired();
             builder.Property(p => p.LegalStatus).IsRequired();
-            builder.Property(p => p.Area).IsRequired();
+            builder.Property(p => p.Description).IsRequired();
 
             builder.HasOne(p => p.Location)
-                .WithMany(p => p.Properties)
-                .HasForeignKey(p => p.LocationId)
+                .WithOne(l => l.Property)
+                .HasForeignKey<Property>(p => p.LocationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasIndex(p => p.LocationId).IsUnique();
+
             builder.HasMany(p => p.Advertisements)
-                .WithOne(p => p.Property)
-                .HasForeignKey(p => p.PropertyId)
+                .WithOne(a => a.Property)
+                .HasForeignKey(a => a.PropertyId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(p => p.PropertyAmenities)
@@ -31,8 +33,7 @@ namespace RealEstate.Infrastructure.Persistence.Configurations
                 .HasForeignKey(pa => pa.PropertyId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(p => new { p.LocationId, p.FloorNumber, p.UnitNumber });
-
+            builder.HasIndex(p => p.FloorNumber);
         }
     }
 }

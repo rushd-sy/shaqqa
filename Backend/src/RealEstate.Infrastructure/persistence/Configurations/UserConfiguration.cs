@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RealEstate.Domain.Users;
+using RealEstate.Domain.Users.Enums;
 using RealEstate.Infrastructure.Identity;
 
 namespace RealEstate.Infrastructure.Persistence.Configurations
@@ -15,6 +16,7 @@ namespace RealEstate.Infrastructure.Persistence.Configurations
             builder.Property(u => u.Id).ValueGeneratedNever();
             builder.Property(u => u.FirstName).IsRequired().HasMaxLength(255);
             builder.Property(u => u.LastName).IsRequired().HasMaxLength(255);
+            builder.Property(u => u.Role).HasDefaultValue(UserRole.Customer).HasSentinel((UserRole)0);
 
             builder.HasOne<ApplicationUser>()
                 .WithOne()

@@ -5,22 +5,15 @@ using RealEstate.Domain.Properties.Enums;
 using RealEstate.Domain.PropertyAmenities;
 namespace RealEstate.Domain.Properties;
 
-public class Property : AuditableEntity
+public class Property : AuditableInternalEntity
 {
-    public Property(Guid id) : base(id) { }
-    public Guid LocationId { get; set; }
-    public string Title { get; set; } = string.Empty;
+    public PropertyType PropertyType { get; set; }
     public string Description { get; set; } = string.Empty;
-    public string? UnitNumber { get; set; }
-    public float Area { get; set; }
     public int? NumberOfRooms { get; set; }
     public int? FloorNumber { get; set; }
-    public PropertyType PropertyType { get; set; }
-    public LandType? LandType { get; set; }
-    public ListingType ListingType { get; set; }
+    public int LocationId { get; set; }
     public LegalStatus LegalStatus { get; set; }
-    public PropertyStatus Status { get; set; }
-
+    public DateTimeOffset ConstructionDate { get; set; }
 
     public Location Location { get; set; } = null!;
     public ICollection<Advertisement> Advertisements { get; set; } = new List<Advertisement>();
