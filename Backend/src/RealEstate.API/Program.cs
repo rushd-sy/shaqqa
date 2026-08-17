@@ -1,11 +1,34 @@
+using Microsoft.OpenApi;
 using Microsoft.AspNetCore.RateLimiting;
 using RealEstate.API.Extensions;
 using RealEstate.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
+var jwtSecurityScheme = new OpenApiSecurityScheme
+{
+    Name = "Authorization",
+    Type = SecuritySchemeType.Http,
+    Scheme = "Bearer",
+    BearerFormat = "JWT",
+    In = ParameterLocation.Header,
+    Description = "Enter your JWT token below."
+};
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "RealEstate.API", Version = "v1" });
+
+    options.AddSecurityDefinition("Bearer", jwtSecurityScheme);
+
+    options.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecuritySchemeReference("Bearer"),
+            new List<string>()
+        }
+    });
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDatabaseService(builder.Configuration);
 builder.Services.AddIdentityService();

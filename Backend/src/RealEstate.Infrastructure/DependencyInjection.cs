@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using RealEstate.Application.Common.Interfaces;
+using RealEstate.Application.DTOs;
 using RealEstate.Application.Identity.Validators;
 using RealEstate.Infrastructure.BackgroundServices;
 using RealEstate.Infrastructure.Identity;
@@ -24,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddValidatorsFromAssemblyContaining<SendOtpDtoValidator>();
         services.AddValidatorsFromAssemblyContaining<RegisterWithOtpDtoValidator>();
+        services.AddValidatorsFromAssemblyContaining<LoginWithOtpDtoValidator>();
         services.AddHostedService<PhoneVerificationCleanupService>();
         services.AddScoped<ISmsService, FakeSmsService>();
         services.AddHttpClient<ITelegramService, TelegramService>();

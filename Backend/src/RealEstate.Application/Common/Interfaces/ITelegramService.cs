@@ -2,6 +2,6 @@
 {
     public interface ITelegramService
     {
-        Task<bool> SendOtpAsync(string chatId, string otpCode);
+        Task<bool> SendOtpAsync(string chatId, string otpCode, CancellationToken cancellationToken = default);
     }
 }

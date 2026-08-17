@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using RealEstate.Application.Common.Interfaces;
+using RealEstate.Application.DTOs;
 using RealEstate.Application.Identity.DTOs;
 using RealEstate.Domain.Common.Results;
 
@@ -14,12 +15,14 @@ public class IdentityController : ControllerBase
     private readonly IIdentityService _identityService;
     private readonly IValidator<SendOtpDto> _sendOtpValidator;
     private readonly IValidator<RegisterWithOtpDto> _registerWithOtpValidator;
+    private readonly IValidator<LoginWithOtpDto> _loginWithOtpValidator;
 
-    public IdentityController(IIdentityService identityService, IValidator<SendOtpDto> sendOtpValidator, IValidator<RegisterWithOtpDto> registerWithOtpValidator)
+    public IdentityController(IIdentityService identityService, IValidator<SendOtpDto> sendOtpValidator, IValidator<RegisterWithOtpDto> registerWithOtpValidator, IValidator<LoginWithOtpDto> loginWithOtpValidator)
     {
         _identityService = identityService;
         _sendOtpValidator = sendOtpValidator;
         _registerWithOtpValidator = registerWithOtpValidator;
+        _loginWithOtpValidator = loginWithOtpValidator;
     }
 
     [HttpPost("send-otp")]
@@ -57,6 +60,24 @@ public class IdentityController : ControllerBase
         }
 
         var result = await _identityService.RegisterWithOtpAsync(dto, cancellationToken);
+        return HandleResult(result);
+    }
+    [HttpPost("login-otp")]
+    public async Task<IActionResult> LoginWithOtp([FromBody] LoginWithOtpDto dto,CancellationToken cancellationToken)
+    {
+        var validationResult = await _loginWithOtpValidator.ValidateAsync(dto, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors.Select(e => new
+            {
+                Code = e.PropertyName,
+                Description = e.ErrorMessage
+            });
+
+            return BadRequest(new { IsSuccess = false, IsError = true, Errors = errors });
+        }
+        var result = await _identityService.LoginWithOtpAsync(dto, cancellationToken);
+
         return HandleResult(result);
     }
 
